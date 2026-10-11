@@ -47,7 +47,7 @@ For the offline production-PWA scenario, build, run `npm run preview -- --port 4
 
 ## Finn
 
-Finn now reads current permitted records from Neon. Real answers still require server-only `GROQ_API_KEY`, `GROQ_MODEL`, an actual Groq Free account and verified Zero Data Retention. Set `GROQ_FREE_CONFIRMED=true` and `GROQ_ZDR_CONFIRMED=true` only after checking those settings. These flags are operator acknowledgments, not remote account checks. Never paste keys into chat or tracked files. No paid fallback exists.
+Finn reads current permitted records from Neon. The user configured Groq in Vercel, and two consecutive live answers with synthetic entries have been verified. A new deployment/checkout requires server-only `GROQ_API_KEY`, `GROQ_MODEL`, an actual Groq Free account and verified Zero Data Retention. Set `GROQ_FREE_CONFIRMED=true` and `GROQ_ZDR_CONFIRMED=true` only after checking those settings. These flags are operator acknowledgments, not remote account checks. Never paste keys into chat or tracked files. No paid fallback exists.
 
 Caps remain 10/user/day, 80/shared/day, 2/shared/minute, one active request, and conservative token reservations of 6,000/minute and 150,000/day. Failed requests count. Lower these if the real provider allowance is tighter. Questions survive errors; core organizer screens remain usable.
 
@@ -55,7 +55,7 @@ Finn now reconciles a completed reservation to Groq's validated `usage.total_tok
 
 Local limits now identify personal/shared daily allowance or a short pause and provide a calculated `Retry-After`; daily allowances reset at midnight in Asia/Manila. Groq rate limits have separate wording and preserve Groq's numeric retry header when supplied. Finn keeps the failed question, shows a countdown, and blocks duplicate sends until the timer ends; it never resends automatically. Existing limits and the zero-payment requirement are unchanged.
 
-Current initial model recommendation, researched October 11, 2026: `openai/gpt-oss-20b`, listed in Groq's production models and Free Plan limits. Enable Global/Inference ZDR in Groq before setting the acknowledgment flags. The user reported one working live response after configuring Vercel; model quality and repeated live requests still require the validation recorded in Implementation status. Keep credentials server-only and the account on Free.
+Current initial model recommendation, researched October 11, 2026: `openai/gpt-oss-20b`, listed in Groq's production models and Free Plan limits. Enable Global/Inference ZDR in Groq before setting the acknowledgment flags. Live two-question, computed PHP total and saved-note citation checks are recorded in Implementation status; broader model quality and outage/quota behavior still need evaluation. Keep credentials server-only and the account on Free.
 
 Proposals are private, expire in ten minutes, and require exact-preview confirmation. Applying rechecks ownership, exclusions, deletion and version. Repeating-series AI edits remain manual in this build.
 
