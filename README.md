@@ -35,7 +35,7 @@ As of October 11, 2026:
 
 - Audience: general Filipino users.
 - Expenses: simple logging and summaries initially.
-- Finn: advice plus proposed changes that users confirm before they are applied.
+- Finn: an upbeat, witty hype bro for casual chat, saved-entry questions, and advice; proposed changes require user confirmation. See [Finn personality](docs/FINN_PERSONALITY.md).
 - Data: accounts with cloud sync across devices and offline core-record access, selected under the user's delegated judgment.
 
 - Localization: PHP, Asia/Manila, and English only, including Finn's replies.

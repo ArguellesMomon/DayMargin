@@ -11,6 +11,7 @@ beforeAll(async () => {
   db = new PGlite();
   await db.exec(`create schema neon_auth; create table neon_auth."user"(id uuid primary key); insert into neon_auth."user" values('${a}'),('${b}');`);
   await db.exec(await readFile(new URL('../neon/migrations/202610110002_daymargin.sql', import.meta.url), 'utf8'));
+  await db.exec(await readFile(new URL('../neon/migrations/202610110003_finn_conversation.sql', import.meta.url), 'utf8'));
 }, 60000);
 afterAll(async () => { await db?.close(); });
 const asUser = user => db.exec(`reset role; set role daymargin_app; set daymargin.user_id='${user}';`);
@@ -48,25 +49,43 @@ it('keeps shared AI reservations server-only and atomically bounded', async () =
   const first = (await db.query('select daymargin.reserve_finn_request($1,5000,10,80,2) as id', [a])).rows[0].id;
   expect(first).toBeTruthy();
   await db.query('update daymargin.finn_requests set finished=true where id=$1', [first]);
-  expect((await db.query('select daymargin.reserve_finn_request($1,5000,10,80,2) as id', [b])).rows[0].id).toBeNull();
+  expect((await db.query('select daymargin.reserve_finn_request($1,5000,10,80,2) as id', [b])).rows[0].id).toBeTruthy();
+  expect((await db.query('select daymargin.reserve_finn_request($1,5000,10,80,2) as id', [a])).rows[0].id).toBeNull();
 });
-it('reconciles provider usage so the second ordinary question fits, while preserving actual limits', async () => {
+it('supports repeated and concurrent conversations without an artificial two-message or active-request gate', async () => {
   await db.exec('reset role; delete from daymargin.finn_requests');
   const store = new RecordStore(a, db);
-  const limits = { user: 10, shared: 80, minute: 2 };
+  const limits = { user: 1000, shared: 1000, minute: 30 };
   const first = await store.reserve(3388, limits);
   expect(first).toBeTruthy();
-  expect(await store.reserve(3388, limits)).toBeNull(); // one active request
+  const other = new RecordStore(b, db);
+  const simultaneous = await other.reserve(3388, limits);
+  expect(simultaneous).toBeTruthy();
+  await other.finishReservation(simultaneous, 1000);
   await store.finishReservation(first, 1000);
   const second = await store.reserve(3388, limits);
   expect(second).toBeTruthy();
   await store.finishReservation(second, 1000);
-  expect(await store.reserve(3388, limits)).toBeNull(); // two requests per minute
-  expect(await store.finnLimitStatus(3388, limits)).toEqual({ reason: 'minute', retryAfter: expect.any(Number) });
+  const third = await store.reserve(3388, limits);
+  expect(third).toBeTruthy();
+  await store.finishReservation(third, 1000);
   await store.finishReservation(first, 1); // completed accounting is immutable
   expect((await db.query('select reserved_tokens from daymargin.finn_requests where id=$1', [first])).rows[0].reserved_tokens).toBe(1000);
   await db.exec("update daymargin.finn_requests set created_at=clock_timestamp()-interval '2 minutes'");
   expect(await store.reserve(3388, limits)).toBeTruthy();
+  await db.exec('delete from daymargin.finn_requests');
+});
+it('atomically caps shared requests at 30 per minute and retains the daily token safety budget', async () => {
+  await db.exec('reset role; delete from daymargin.finn_requests');
+  const store = new RecordStore(a, db), limits = { user: 9999, shared: 9999, minute: 9999 };
+  const leases = await Promise.all(Array.from({ length: 31 }, () => store.reserve(100, limits)));
+  expect(leases.filter(Boolean)).toHaveLength(30);
+  expect(await store.finnLimitStatus(100, { ...limits, minute: 30 })).toEqual({ reason: 'minute', retryAfter: expect.any(Number) });
+  await db.exec('delete from daymargin.finn_requests');
+  await db.query('insert into daymargin.finn_requests(owner_id,reserved_tokens,finished) values($1,199999,true)', [a]);
+  expect(await store.reserve(1, limits)).toBeTruthy();
+  expect(await store.reserve(1, limits)).toBeNull();
+  expect(await store.finnLimitStatus(1, limits)).toEqual({ reason: 'shared_daily', retryAfter: expect.any(Number) });
   await db.exec('delete from daymargin.finn_requests');
 });
 it('keeps unknown usage conservative and reports daily limits independently of minute limits', async () => {

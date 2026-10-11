@@ -7,8 +7,9 @@ vi.mock('../server/http.js', async importOriginal => ({
   ...await importOriginal(), authenticated: async () => ({ store: mocks.store }),
 }));
 import handler from '../api/finn.js';
-import { reportedTokenUsage } from '../server/finn.js';
+import { conversationMemory, reportedTokenUsage, systemPrompt } from '../server/finn.js';
 import { recordSchema, today } from '../src/lib/domain.js';
+import { fromServer } from '../src/lib/storage.js';
 
 let fetchMock;
 const output = { answer: 'There are no saved entries to summarize yet.', sources: [], action: null };
@@ -23,6 +24,7 @@ async function ask(res = response()) {
 }
 beforeEach(() => {
   vi.clearAllMocks();
+  mocks.store.ownerId = '10000000-0000-4000-8000-000000000001';
   for (const [name, value] of Object.entries({ GROQ_API_KEY: 'test-only-key', GROQ_MODEL: 'openai/gpt-oss-20b', GROQ_FREE_CONFIRMED: 'true', GROQ_ZDR_CONFIRMED: 'true' })) vi.stubEnv(name, value);
   mocks.store.list.mockResolvedValue([]); mocks.store.reserve.mockResolvedValue('lease');
   mocks.store.finishReservation.mockResolvedValue();
@@ -35,12 +37,27 @@ test('reconciles successful usage before sending the answer to allow an immediat
   res.json = body => { expect(mocks.store.finishReservation).toHaveBeenCalledWith('lease', 1000); res.body = body; };
   expect((await ask(res)).statusCode).toBe(200);
   expect(mocks.store.finishReservation).toHaveBeenCalledOnce();
-  expect(await ask()).toMatchObject({ statusCode: 200, body: output });
+  expect(await ask()).toMatchObject({ statusCode: 200, body: { ...output, memory: expect.any(String) } });
 });
 test('charges valid reported usage even if generated JSON is invalid', async () => {
   fetchMock.mockResolvedValue(provider('not json'));
   expect((await ask()).statusCode).toBe(502);
   expect(mocks.store.finishReservation).toHaveBeenCalledWith('lease', 1000);
+});
+test('answers casual chat using the built-in personality and authenticated recent follow-up context', async () => {
+  const memory = conversationMemory(mocks.store.ownerId, 'Suggest a hobby.', 'Try sketching.', [], 'test-only-key');
+  const answer = { answer: 'Start with a five-minute sketch, bro. One page, no pressure.', sources: [], action: null };
+  fetchMock.mockResolvedValue(provider(JSON.stringify(answer)));
+  const res = response();
+  await handler({ method: 'POST', headers: {}, body: { question: 'How do I start?', history: [memory] } }, res);
+  expect(res.statusCode).toBe(200); expect(res.body.answer).toBe(answer.answer);
+  const payload = JSON.parse(fetchMock.mock.calls[0][1].body);
+  expect(payload.messages.map(m => m.role)).toEqual(['system', 'user', 'assistant', 'user']);
+  expect(payload.messages[0].content).toBe(systemPrompt);
+  expect(payload.messages[0].content).toContain('supportive hype bro');
+  expect(payload.messages[1].content).toBe('Suggest a hobby.');
+  expect(payload).toMatchObject({ reasoning_effort: 'low', include_reasoning: false });
+  expect(mocks.store.reserve.mock.calls[0][1]).toEqual({ user: 1000, shared: 1000, minute: 30 });
 });
 test('Neon Date timestamps are normalized before Finn sorts equally relevant saved entries', async () => {
   const rows = [10, 20].map(amountCents => ({
@@ -55,6 +72,18 @@ test('Neon Date timestamps are normalized before Finn sorts equally relevant sav
   expect(context.records).toHaveLength(2);
   expect(context.calculatedSpending.totalCents).toBe(30);
 });
+test('rejects an answer when a record available through conversation memory becomes excluded mid-request', async () => {
+  const rows = Array.from({ length: 13 }, (_, i) => ({ id: crypto.randomUUID(), version: 1, deleted: false,
+    created_at: new Date(), updated_at: new Date(), data: recordSchema.parse({ type: 'note', title: `Note ${i}` }) }));
+  const memory = conversationMemory(mocks.store.ownerId, 'Summarize notes.', 'A short summary.', rows.map(fromServer), 'test-only-key');
+  mocks.store.list.mockResolvedValue(rows);
+  mocks.store.get.mockImplementation(ids => Promise.resolve(rows.filter(row => ids.includes(row.id)).map((row, i) => i === 0 ? { ...row, data: { ...row.data, excluded: true }, version: 2 } : row)));
+  const res = response();
+  await handler({ method: 'POST', headers: {}, body: { question: 'What about that?', history: [memory] } }, res);
+  expect(res.statusCode).toBe(409);
+  expect(mocks.store.get.mock.calls[0][0]).toHaveLength(13); // even entries omitted from the new bounded snippets
+  expect(mocks.store.finishReservation).toHaveBeenCalledWith('lease', 1000);
+});
 test('unreported usage and provider failures retain the conservative reservation', async () => {
   fetchMock.mockResolvedValue(new Response('{}', { status: 503 }));
   const log = vi.spyOn(console, 'error').mockImplementation(() => {});
@@ -63,7 +92,7 @@ test('unreported usage and provider failures retain the conservative reservation
   expect(log).toHaveBeenCalledWith('Finn provider request failed', { status: 503 });
 });
 test.each([
-  ['minute', 30, 'short pause'], ['user_daily', 3600, 'your daily Finn allowance'], ['shared_daily', 3600, 'shared daily allowance'],
+  ['minute', 30, 'shared free-service request limit'], ['user_daily', 3600, 'your daily Finn allowance'], ['shared_daily', 3600, 'shared daily allowance'],
 ])('reports local %s limits with retry timing without calling the AI provider', async (reason, retryAfter, message) => {
   mocks.store.reserve.mockResolvedValue(null); mocks.store.finnLimitStatus.mockResolvedValue({ reason, retryAfter });
   const res = await ask();

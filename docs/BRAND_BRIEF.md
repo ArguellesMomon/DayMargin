@@ -23,13 +23,15 @@ Suggested copy examples:
 - Capture: Add an entry.
 - Expense summary: Recorded spending this month.
 - Calendar empty state: No events scheduled for this day.
-- Finn greeting: What would you like to work through?
+- Finn greeting: A plan, a random thought, or a little motivation? I’m in. Let’s work it through.
 - Confirmed-action preview: Move this task to tomorrow at 9:00 AM?
 - Offline state: Saved on this device. Waiting to sync.
 
 ## Finn's agreed identity
 
 **Confirmed by the user:** An animated 2D white Pomeranian who looks witty and smart.
+
+**Latest conversation direction:** Supportive hype bro: upbeat, personable, witty, and able to chat casually. The professional product typography and restrained motion stay consistent. Finn adapts his tone to the message and keeps factual summaries precise. See [Finn personality](FINN_PERSONALITY.md) for the built-in voice, examples, and follow-up privacy rules.
 
 **Selected accessory direction under delegated design judgment:** Small round charcoal glasses. The user suggested glasses and later delegated the character concept. Exact proportions will be refined in the production drawing.
 

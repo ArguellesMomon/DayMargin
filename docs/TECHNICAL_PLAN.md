@@ -40,10 +40,10 @@ Select a production text model available to the actual Free account from the [su
 
 **Proposed application controls:**
 
-- Start with concise replies, bounded relevant context, and a per-user daily allowance. A starting allowance of 10 questions per user per day is a proposal to tune after checking real account capacity; it does not reserve provider capacity for each user.
-- Enforce per-user and shared request/token limits on the server, with bounded concurrency. Do not send the full record history or analyze every saved entry in the background. Retrieve more relevant records within the context allowance when needed; otherwise explain the coverage limit.
+- Use concise replies and bounded relevant context. The user's latest request removes the earlier ten-question personal allowance and two-request shared minute cap. Retain published GPT-OSS Free shared request ceilings (30/minute, 1,000/day) and a 200,000-token daily reservation budget; Groq enforces actual token-per-minute capacity.
+- Reserve shared capacity atomically on the server without a global one-request-at-a-time gate. Retrieve relevant current permitted records on demand. Up to three server-signed recent exchanges can support follow-ups; account, expiry, Manila day and current-library fingerprint checks discard stale or excluded derived context. See [Finn personality](FINN_PERSONALITY.md).
 - Preserve the question on a quota error. Display: Finn is temporarily unavailable. Please try again later. Show a retry time only when supplied or reliably known. Respect provider retry timing and avoid repeated automatic calls.
-- The implementation now distinguishes app daily allowances, app minute pauses, and provider rate limits. A server-computed or provider-supplied numeric retry time drives an explicit-retry countdown. Reconcile a completed reservation to validated provider input/output usage before returning an answer; unknown usage remains conservatively reserved. Output validation failure does not erase known consumed tokens.
+- Distinguish shared daily/request capacity from provider rate limits. Keep any known retry timing in the error, with no forced countdown, automatic retry, or required reload. Reconcile a completed reservation to validated provider usage before returning; unknown usage remains conservatively reserved. Output validation failure does not erase known consumed tokens.
 - Leave notes, tasks, expenses, calendar, and ordinary reminders usable when Finn is unavailable. Do not invent a model response or switch to a paid service.
 - Keep the API key server-only and validate the signed-in user before each request. Proposed record changes still require a separate user confirmation and validated save.
 
