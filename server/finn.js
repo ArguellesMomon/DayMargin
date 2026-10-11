@@ -2,6 +2,14 @@ import { z } from 'zod';
 import { blankRecord, recordSchema, TYPES } from '../src/lib/domain.js';
 import { HttpError } from './http.js';
 export const questionSchema = z.object({ question: z.string().trim().min(1).max(1000) }).strict();
+export function reportedTokenUsage(response) {
+  const usage = response?.usage;
+  if (!usage || !Number.isSafeInteger(usage.prompt_tokens) || usage.prompt_tokens < 1
+    || !Number.isSafeInteger(usage.completion_tokens) || usage.completion_tokens < 0
+    || !Number.isSafeInteger(usage.total_tokens) || usage.total_tokens < 1 || usage.total_tokens > 1000000
+    || usage.total_tokens !== usage.prompt_tokens + usage.completion_tokens) return null;
+  return usage.total_tokens;
+}
 const uuid = z.string().uuid();
 const outputSchema = z.object({ answer: z.string().trim().min(1).max(2600), sources: z.array(uuid).max(12),
   action: z.object({ kind: z.enum(['create', 'edit']), recordId: uuid.nullable().optional(),

@@ -248,3 +248,13 @@ Added IMPLEMENTATION_STATUS.md with document-to-code mapping and SETUP.md with l
 **Correction:** Actionable setup help for unsupported/blocked browsers, iPhone/iPad Home Screen instructions, direct-tab/HTTPS guidance, permission refresh on returning to the app, visible request feedback, scoped service-worker readiness and a user-triggered private test notification. The native prompt remains a browser-controlled request after an explicit user action. No automatic scheduled push system was added or claimed.
 
 **Validation:** 46 automated checks, the production build, and five isolated browser scenarios passed, including an actual service-worker test notification with permission granted only in a disposable test profile. Real mobile permission/display and scheduled closed-app delivery remain to validate/implement.
+
+## October 11, 2026 — Finn connection and follow-up quota accounting
+
+**User actions:** Configured Groq Free and Global/Inference ZDR in Vercel. The current setup recommendation is `openai/gpt-oss-20b`, confirmed in Groq's current production/free-model documentation. The user reported a working reply, followed by a generic temporary-unavailability message on the next question.
+
+**Finding:** Read-only aggregate production request metadata showed finished reservations of 3,388/3,377 tokens, each still counted at its initial upper bound. The existing 6,000-token/minute gate therefore rejected an ordinary immediate follow-up. No user's questions or records were inspected to diagnose this.
+
+**Correction:** Reconcile server-validated provider input/output usage before returning a successful answer; retain the conservative reservation when usage is absent or invalid, and preserve accounting on rejected model output. Ownership and completion guards protect updates. Explain app daily/minute limits separately from Groq limits, provide known retry timing and show a question-preserving cooldown with explicit retry. The free-plan caps were not increased and no paid fallback was introduced.
+
+**Validation:** 56 automated logic/database/API checks, production build and one isolated browser cooldown/retry test passed. Live two-question verification will use a disposable account and synthetic entries after deployment, followed by account/data cleanup.

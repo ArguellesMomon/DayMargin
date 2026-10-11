@@ -81,6 +81,12 @@ export async function cloudRequest(path, options = {}) {
   if (!tokenResponse.ok || !tokenData.token) throw new Error('Please sign in again before continuing.');
   const response = await fetch(path, { ...options, headers: { 'Content-Type': 'application/json', ...options.headers, Authorization: `Bearer ${tokenData.token}` }, signal: options.signal || AbortSignal.timeout(45000) });
   const result = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(result.error || 'The service is temporarily unavailable. Please retry.');
+  if (!response.ok) {
+    const error = new Error(result.error || 'The service is temporarily unavailable. Please retry.');
+    const retry = response.headers.get('Retry-After');
+    if (retry && /^\d+$/.test(retry)) error.retryAfter = Math.max(1, Math.min(Number(retry), 86400));
+    error.status = response.status;
+    throw error;
+  }
   return result;
 }

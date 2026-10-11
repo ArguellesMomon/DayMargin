@@ -2,10 +2,10 @@ import { buildContext } from '../src/lib/finn-context.js';
 import { fromServer } from '../src/lib/storage.js';
 import { recordSchema, occursOn } from '../src/lib/domain.js';
 import { authenticated, fail, HttpError, parseBody, reply, requireMethod } from '../server/http.js';
-import { questionSchema, systemPrompt, validateFinnOutput } from '../server/finn.js';
+import { questionSchema, reportedTokenUsage, systemPrompt, validateFinnOutput } from '../server/finn.js';
 
 export default async function handler(req, res) {
-  let store, reservation;
+  let store, reservation, usedTokens = null;
   try {
     requireMethod(req, 'POST');
     const parsed = questionSchema.safeParse(parseBody(req, 5000));
@@ -38,12 +38,19 @@ export default async function handler(req, res) {
     }
     if (reservedTokens > 5500) throw new HttpError(422, 'This question needs a smaller set of entries. Please ask a more focused question.');
     const bounded = (value, fallback, maximum) => Math.max(1, Math.min(Number(value) || fallback, maximum));
-    const lease = await store.reserve(reservedTokens, {
+    const limits = {
       user: bounded(process.env.FINN_USER_DAILY_LIMIT, 10, 10),
       shared: bounded(process.env.FINN_SHARED_DAILY_LIMIT, 80, 80),
       minute: bounded(process.env.FINN_SHARED_MINUTE_LIMIT, 2, 2),
-    });
-    if (!lease) throw new HttpError(429, 'Finn is temporarily unavailable. Please try again later.');
+    };
+    const lease = await store.reserve(reservedTokens, limits);
+    if (!lease) {
+      const limit = await store.finnLimitStatus(reservedTokens, limits);
+      res.setHeader('Retry-After', String(limit.retryAfter));
+      if (limit.reason === 'user_daily') throw new HttpError(429, 'You’ve reached your daily Finn allowance. It resets at midnight in Asia/Manila. Your question is still here.');
+      if (limit.reason === 'shared_daily') throw new HttpError(429, 'Finn’s shared daily allowance is used up. It resets at midnight in Asia/Manila. Your question is still here.');
+      throw new HttpError(429, `Finn needs a short pause to stay within its free allowance. Try again in ${limit.retryAfter} ${limit.retryAfter === 1 ? 'second' : 'seconds'}. Your question is still here.`);
+    }
     reservation = lease;
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST', headers: { Authorization: `Bearer ${process.env.GROQ_API_KEY}`, 'Content-Type': 'application/json' },
@@ -52,11 +59,18 @@ export default async function handler(req, res) {
     if (!response.ok) {
       if (response.status === 429) {
         const retry = response.headers.get('retry-after');
-        if (retry && /^\d+$/.test(retry)) res.setHeader('Retry-After', retry);
+        if (retry && /^\d+$/.test(retry)) {
+          res.setHeader('Retry-After', retry);
+          throw new HttpError(429, `Finn’s AI provider reached a free-plan limit. Try again in ${retry} seconds. Your question is still here.`);
+        }
+        throw new HttpError(429, 'Finn’s AI provider reached a free-plan limit. Please try again later. Your question is still here.');
       }
-      throw new HttpError(response.status === 429 ? 429 : 503, 'Finn is temporarily unavailable. Please try again later.');
+      console.error('Finn provider request failed', { status: response.status });
+      throw new HttpError(503, 'Finn’s AI provider could not complete the request. Please try again later. Your question is still here.');
     }
     const raw = await response.json();
+    usedTokens = reportedTokenUsage(raw);
+    // Provider usage counts even if later output checks fail.
     let output;
     try { output = JSON.parse(raw.choices?.[0]?.message?.content); } catch { throw new HttpError(502, 'Finn could not finish a clear answer. Please retry.'); }
     const result = validateFinnOutput(output, context, records);
@@ -75,7 +89,10 @@ export default async function handler(req, res) {
       await store.saveProposal({ id: proposalId, action: result.action, expiresAt: new Date(Date.now() + 10 * 60000).toISOString() });
       result.action.proposalId = proposalId;
     }
+    // Release unused budget before the browser can send its next question.
+    await store.finishReservation(reservation, usedTokens);
+    reservation = null;
     return reply(res, 200, result);
   } catch (error) { return fail(res, error); }
-  finally { if (store && reservation) await store.finishReservation(reservation).catch(() => {}); }
+  finally { if (store && reservation) await store.finishReservation(reservation, usedTokens).catch(() => { console.error('Finn token accounting could not be completed'); }); }
 }

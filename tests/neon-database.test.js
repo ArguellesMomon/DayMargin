@@ -2,6 +2,7 @@ import { readFile } from 'node:fs/promises';
 import { PGlite } from '@electric-sql/pglite';
 import { afterAll, beforeAll, expect, it } from 'vitest';
 import { blankRecord } from '../src/lib/domain.js';
+import { RecordStore } from '../server/database.js';
 let db;
 const a = '10000000-0000-4000-8000-000000000001', b = '20000000-0000-4000-8000-000000000002';
 const id = '30000000-0000-4000-8000-000000000003', op = '40000000-0000-4000-8000-000000000004';
@@ -48,6 +49,37 @@ it('keeps shared AI reservations server-only and atomically bounded', async () =
   expect(first).toBeTruthy();
   await db.query('update daymargin.finn_requests set finished=true where id=$1', [first]);
   expect((await db.query('select daymargin.reserve_finn_request($1,5000,10,80,2) as id', [b])).rows[0].id).toBeNull();
+});
+it('reconciles provider usage so the second ordinary question fits, while preserving actual limits', async () => {
+  await db.exec('reset role; delete from daymargin.finn_requests');
+  const store = new RecordStore(a, db);
+  const limits = { user: 10, shared: 80, minute: 2 };
+  const first = await store.reserve(3388, limits);
+  expect(first).toBeTruthy();
+  expect(await store.reserve(3388, limits)).toBeNull(); // one active request
+  await store.finishReservation(first, 1000);
+  const second = await store.reserve(3388, limits);
+  expect(second).toBeTruthy();
+  await store.finishReservation(second, 1000);
+  expect(await store.reserve(3388, limits)).toBeNull(); // two requests per minute
+  expect(await store.finnLimitStatus(3388, limits)).toEqual({ reason: 'minute', retryAfter: expect.any(Number) });
+  await store.finishReservation(first, 1); // completed accounting is immutable
+  expect((await db.query('select reserved_tokens from daymargin.finn_requests where id=$1', [first])).rows[0].reserved_tokens).toBe(1000);
+  await db.exec("update daymargin.finn_requests set created_at=clock_timestamp()-interval '2 minutes'");
+  expect(await store.reserve(3388, limits)).toBeTruthy();
+  await db.exec('delete from daymargin.finn_requests');
+});
+it('keeps unknown usage conservative and reports daily limits independently of minute limits', async () => {
+  await db.exec('reset role; delete from daymargin.finn_requests');
+  const store = new RecordStore(a, db), other = new RecordStore(b, db);
+  const limits = { user: 1, shared: 80, minute: 2 };
+  const first = await store.reserve(3388, limits);
+  await other.finishReservation(first, 100); // ownership cannot change another lease
+  await store.finishReservation(first, -10); // invalid usage cannot refund
+  expect((await db.query('select reserved_tokens from daymargin.finn_requests where id=$1', [first])).rows[0].reserved_tokens).toBe(3388);
+  expect(await store.finnLimitStatus(3388, limits)).toEqual({ reason: 'user_daily', retryAfter: expect.any(Number) });
+  expect(await other.finnLimitStatus(3388, { ...limits, shared: 1 })).toEqual({ reason: 'shared_daily', retryAfter: expect.any(Number) });
+  await db.exec('delete from daymargin.finn_requests');
 });
 it('cascades application data when the managed identity is deleted', async () => {
   await db.exec('reset role');

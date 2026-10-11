@@ -53,5 +53,32 @@ export class RecordStore {
     const { rows } = await (this.pool || databasePool()).query('select daymargin.reserve_finn_request($1,$2,$3,$4,$5) as id', [this.ownerId, tokens, limits.user, limits.shared, limits.minute]);
     return rows[0].id;
   }
-  async finishReservation(id) { await (this.pool || databasePool()).query('update daymargin.finn_requests set finished=true where id=$1 and owner_id=$2', [id, this.ownerId]); }
+  async finnLimitStatus(tokens, limits) {
+    const { rows } = await (this.pool || databasePool()).query(`with times as (
+      select clock_timestamp() as check_time, date_trunc('day',now() at time zone 'Asia/Manila') at time zone 'Asia/Manila' as day_start
+    ) select count(*) filter (where owner_id=$1 and created_at>=day_start)::int as user_count,
+      count(*) filter (where created_at>=day_start)::int as shared_count,
+      coalesce(sum(reserved_tokens) filter (where created_at>=day_start),0)::int as day_tokens,
+      count(*) filter (where created_at>check_time-interval '1 minute')::int as minute_count,
+      coalesce(sum(reserved_tokens) filter (where created_at>check_time-interval '1 minute'),0)::int as minute_tokens,
+      bool_or(not finished and created_at>check_time-interval '1 minute') as active,
+      greatest(1,ceil(extract(epoch from (max(created_at) filter (where created_at>check_time-interval '1 minute')+interval '1 minute'-check_time))))::int as minute_retry,
+      greatest(1,ceil(extract(epoch from (day_start+interval '1 day'-check_time))))::int as day_retry
+      from times left join daymargin.finn_requests on created_at>=day_start or created_at>check_time-interval '1 minute'
+      group by check_time,day_start`, [this.ownerId]);
+    const state = rows[0];
+    if (state.user_count >= limits.user) return { reason: 'user_daily', retryAfter: state.day_retry };
+    if (state.shared_count >= limits.shared || state.day_tokens + tokens > 150000) return { reason: 'shared_daily', retryAfter: state.day_retry };
+    if (state.minute_count >= limits.minute || state.minute_tokens + tokens > 6000 || state.active) return { reason: 'minute', retryAfter: state.minute_retry };
+    // The denied reservation can outlive its limit snapshot as another call finishes.
+    return { reason: 'busy', retryAfter: 1 };
+  }
+  async finishReservation(id, usedTokens = null) {
+    const actual = Number.isSafeInteger(usedTokens) && usedTokens > 0 && usedTokens <= 1000000 ? usedTokens : null;
+    // Unknown usage stays reserved. Known usage includes reasoning/output tokens;
+    // only the server can reconcile, and a completed lease cannot be refunded twice.
+    await (this.pool || databasePool()).query(`update daymargin.finn_requests
+      set finished=true,reserved_tokens=coalesce($3::integer,reserved_tokens)
+      where id=$1 and owner_id=$2 and not finished`, [id, this.ownerId, actual]);
+  }
 }
