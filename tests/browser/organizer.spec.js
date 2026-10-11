@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-test.beforeEach(async ({ page }) => { await page.goto('/'); await page.getByRole('button', { name: /Explore Daymargin|Open development preview/ }).click(); await expect(page.getByRole('heading', { name: 'A little room for today.' })).toBeVisible(); });
+test.beforeEach(async ({ page }) => { await page.goto('/'); await page.getByRole('button', { name: /Explore Daymargin|Open development preview/ }).click(); await expect(page.getByRole('heading', { name: 'Your day, in view.' })).toBeVisible(); });
 test('mobile capture, editing, search, deletion/undo, and reload persistence', async ({ page }) => {
   await page.getByRole('button', { name: 'Add an entry', exact: true }).click();
   await page.getByRole('link', { name: 'Note An idea worth keeping' }).click();
@@ -32,8 +32,8 @@ test('draft restore, dark mode, reduced motion, and unavailable Finn preserve in
   await page.goto('/new/note'); await expect(page.getByRole('textbox', { name: 'Your note', exact: true })).toHaveValue('Draft survives immediate navigation');
   await page.goto('/settings'); await page.getByRole('button', { name: 'Dark', exact: true }).click(); await page.getByLabel('Reduce motion').check();
   await expect(page.locator('html')).toHaveAttribute('data-theme','dark'); await expect(page.locator('html')).toHaveAttribute('data-reduced-motion','true');
-  await page.goto('/finn'); await page.getByRole('button', { name: 'Help me plan tomorrow.' }).click(); await page.getByRole('button', { name: 'Send question to Finn' }).click();
-  await expect(page.getByRole('textbox', { name: 'Ask Finn a question' })).toHaveValue('Help me plan tomorrow.');
+  await page.goto('/finn'); await page.getByRole('button', { name: 'What needs my attention today?' }).click(); await page.getByRole('button', { name: 'Send question to Finn' }).click();
+  await expect(page.getByRole('textbox', { name: 'Ask Finn a question' })).toHaveValue('What needs my attention today?');
   await expect(page.getByRole('alert')).toContainText('not connected');
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
 });

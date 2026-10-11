@@ -307,3 +307,37 @@ Added IMPLEMENTATION_STATUS.md with document-to-code mapping and SETUP.md with l
 **Correction:** Medium/large illustrations greet with a short wave. All avatars now cycle through blink, head tilt and smile frames over 3.2 seconds, while thinking begins with an immediate tilt and repeats over 1.6 seconds. Reduced-motion preferences still keep the character still. New checks compare actual rendered frames and sample ongoing playback on both Today and Finn, without AI calls or access to real user records.
 
 **User clarification:** Reduce motion was enabled, and the user described animation as slow. Explained that this setting disables Finn's animation rather than controlling its speed; turn it off for normal playback. The app preserves the preference. Its normal playback has also been made faster and more apparent.
+
+## October 11, 2026 — Today interface review, local only
+
+**User direction:** Review one page at a time, starting with Today. Make it simpler, more dynamic and immersive, with better sections and strong typography. Do not deploy automatically; the user will explicitly request Git commit/push.
+
+**Implemented locally:** A personal greeting/date, concise overview, real-time next-plan highlight, clearer task rows, combined event/reminder timeline, smaller Finn panel and recent-note previews. Styling is scoped to Today; other pages keep their existing interfaces. Completion/undo, record links, exact PHP totals, recurring exceptions and source-linked reminders remain functional. See [Today UI](TODAY_UI.md).
+
+**Release restriction:** This and subsequent UI work remains local until the user explicitly authorizes committing and pushing. Previous commit/deployment authorization does not apply to this UI review.
+
+## October 11, 2026 — Calendar interface review, local only
+
+**User direction:** “next screen/page pls,” followed by “continue.” Proceed with Calendar as the next main destination, keeping the established page-by-page review and local-only release restriction.
+
+**Implemented locally:** Clear week/date navigation, a full month picker with keyboard browsing, selected-day summary, all-day and timed event agenda, actual overlap labels, and separate task/reminder groups. Attached reminders now appear with their source links. Counts and date markers reflect outstanding work; completed dated tasks remain available to reopen. Creation preserves the selected date. Styling is scoped to Calendar, with the Today revision preserved. See [Calendar UI](CALENDAR_UI.md).
+
+**Review:** Logic and isolated-browser checks cover dates across month/year boundaries, recurring changes/cancellations, source alerts, completion/undo, selected-date capture, long content and both themes. The first browser pass caught focus not returning to the month button after Escape; Calendar now restores it explicitly. Phone/desktop screenshots were inspected. No real user accounts, records, backend configuration or deployment were changed.
+
+## October 11, 2026 — All remaining interfaces, local only
+
+**User direction:** “do all the other pages.” The scope expands from page-by-page review to the remaining interface, while the earlier no-commit/push/deploy restriction continues.
+
+**Implemented:** Searchable/pinned/date-grouped Library with persistent filters and preserved return context; focused expense summary and category/date lists; warmer Finn welcome and readable conversation; shorter entry forms with optional details; readable record pages; grouped Settings with section navigation; welcome, sign-in/sign-up, password recovery/update and setup; consistent shared dialogs. Supporting pages keep their parent destination selected. Existing Today/Calendar revisions are preserved. See [remaining screens](REMAINING_UI.md).
+
+**Connected behavior:** Retain saving, drafts, recurrence, exact PHP arithmetic, notification explanations, privacy exclusions, immediate explicit AI retry and confirmation-only proposals. Optional validation opens the relevant section. Correct Settings' stale conversation-context wording to describe the actual implemented follow-up receipts. Visual review caught the empty Finn page scrolling its mascot away; empty chat now opens at the top. The original spritesheet and character prompt remain unchanged.
+
+**Release:** Local preview and isolated synthetic browser checks only. No production account/data mutation, model request, service setup, Git commit/push or deployment is authorized or performed for this interface review.
+
+## Color scheme revision — October 11, 2026
+
+The user asked to replace green because several of their other projects already use it. Their selected direction is yellow and white in light mode, red and black in dark mode. Shared tokens now supply white/neutral surfaces with warm yellow actions, or near-black/charcoal surfaces with red actions. Dark amber and light red keep links and selected labels readable. The in-app mark follows the theme; the installation icon uses yellow/charcoal. Browser chrome follows the selected or device appearance. See [Color scheme](COLOR_SCHEME.md). The earlier UI-release constraint remains: this update stays local without commit, push or deployment.
+
+## Vibrant yellow and GitHub release authorization — October 11, 2026
+
+The user requested a vibrant yellow, then explicitly instructed commit and push. Light-mode primary fills and installation artwork now use saturated yellow `#ffda00`, with pale yellow `#fff8cc` selection/panel surfaces. Dark amber text stays readable; dark mode retains red/near-black. The release includes the accumulated Today, Calendar and remaining-page UI revisions plus the shared theme update and their documentation/checks. This instruction supersedes the earlier hold on committing/pushing. No separate manual Vercel deployment was requested.

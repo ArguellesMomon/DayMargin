@@ -119,8 +119,8 @@ Keep forms short. Show secondary options when needed. Preserve unsaved input whe
 
 **Selected direction under delegated design judgment: a calm daily notebook with an editorial structure.** Recognizable spacing, typography, and useful hierarchy should carry the identity.
 
-- Light mode: warm paper surfaces, charcoal text, fine dividers, and a restrained muted green accent.
-- Dark mode: deep charcoal surfaces, softened light text, and a corresponding muted green accent.
+- Light mode: white surfaces, charcoal text, fine neutral dividers and warm yellow accents.
+- Dark mode: near-black and charcoal surfaces, softened light text and red accents.
 - Typography: Manrope with system sans-serif fallbacks, a small deliberate type scale, comfortable line spacing, and readable timestamps.
 - Layout: a clear date and page title, grouped rows, selective cards where grouping helps, and generous space around the primary action.
 - Icons: Lucide outline icons with text labels on main navigation, selected for the design direction.
@@ -133,7 +133,7 @@ Every decoration should earn its place. Avoid a repeated dashboard-card grid, de
 
 **Proposed execution:** Thin round glasses, expressive eyes, and small purposeful movements. See [Brand and character brief](BRAND_BRIEF.md) for the visual reference specification.
 
-**Selected:** Warm paper and dark graphite surfaces, a muted forest-green accent, Manrope typography, round charcoal glasses, and restrained Finn motion. See [Screen concepts](SCREEN_CONCEPTS.md) for screen-level execution.
+**Selected:** Yellow and white light mode, red and near-black dark mode, Manrope typography and restrained Finn motion. The user's supplied white-dog spritesheet supersedes the earlier glasses design. See [Color scheme](COLOR_SCHEME.md). See [Screen concepts](SCREEN_CONCEPTS.md) for screen-level execution.
 
 **Created:** [Finn master drawing v1](../assets/finn/finn-master-v1.png), an original transparent 2D white Pomeranian with round glasses. The [generation record](../assets/finn/finn-master-v1.prompt.md) preserves the exact prompt.
 

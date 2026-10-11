@@ -1,3 +1,4 @@
+import BrandMark from './components/BrandMark.jsx';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Navigate, NavLink, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { CalendarDays, LayoutList, Library, MessageCircle, Plus, Settings, WifiOff, X, ArrowUpRight } from 'lucide-react';
@@ -41,8 +42,12 @@ export default function App() {
   useEffect(() => { readPreferences().then(value => { if (!preferencesEdited.current) { preferencesRef.current = value; setPreferences(value); } }).catch(() => {}); }, []);
   useEffect(() => {
     const query = matchMedia('(prefers-color-scheme: dark)');
-    const apply = () => { document.documentElement.dataset.theme = preferences.theme === 'system' ? (query.matches ? 'dark' : 'light') : preferences.theme;
-      document.documentElement.dataset.reducedMotion = preferences.reducedMotion ? 'true' : 'false'; };
+    const apply = () => {
+      document.documentElement.dataset.theme = preferences.theme === 'system' ? (query.matches ? 'dark' : 'light') : preferences.theme;
+      document.documentElement.dataset.reducedMotion = preferences.reducedMotion ? 'true' : 'false';
+      const browserColor = document.querySelector('meta[name="theme-color"]');
+      if (browserColor) browserColor.content = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();
+    };
     apply(); query.addEventListener('change', apply); return () => query.removeEventListener('change', apply);
   }, [preferences]);
   useEffect(() => {
@@ -76,15 +81,20 @@ export default function App() {
   const context = { data, user, preview: !user && preview, online, preferences, changePreferences, notify, enterPreview,
     exitPreview: () => { sessionStorage.removeItem('daymargin-preview'); setPreview(false); navigate('/welcome'); },
     openCapture: () => setCapture(true) };
-  if (!authReady) return <div className="loading-page"><img src="/icon.svg" width="40" alt="" /><p>Opening Daymargin…</p></div>;
+  if (!authReady) return <div className="loading-page"><BrandMark size={40} /><p>Opening Daymargin…</p></div>;
   const standalone = ['/welcome', '/auth', '/setup'].some(path => location.pathname.startsWith(path));
   if (!account && !standalone) return <Navigate to="/welcome" replace />;
   const visible = !standalone && account;
+  const detailRecord = data.records.find(record => record.id === location.pathname.split('/')[2]);
+  const entryDestination = location.pathname.startsWith('/new/') || location.pathname.startsWith('/record/')
+    ? location.state?.returnTo?.startsWith('/library') ? '/library' : location.pathname === '/new/event' || detailRecord?.type === 'event' ? '/calendar' : '/library'
+    : null;
+  const navClass = path => ({ isActive }) => isActive || path === entryDestination ? 'active' : undefined;
   return <OrganizerContext.Provider value={context}>
     <a href="#main" className="skip-link">Skip to content</a>
     <div className={visible ? 'app-layout' : 'standalone-layout'}>
-      {visible && <aside className="sidebar"><NavLink to="/" className="brand"><img src="/icon.svg" alt="" /><span>daymargin<span className="brand-dot">.</span></span></NavLink><p className="sidebar-caption">A little more room for your day.</p>
-        <nav aria-label="Main navigation">{destinations.map(({ path, label, icon: Icon }) => <NavLink key={path} to={path} end={path === '/'}><Icon size={19} strokeWidth={1.7} /><span>{label}</span><span className="nav-marker" /></NavLink>)}</nav>
+      {visible && <aside className="sidebar"><NavLink to="/" className="brand"><BrandMark /><span>daymargin<span className="brand-dot">.</span></span></NavLink><p className="sidebar-caption">A little more room for your day.</p>
+        <nav aria-label="Main navigation">{destinations.map(({ path, label, icon: Icon }) => <NavLink key={path} to={path} end={path === '/'} className={navClass(path)} aria-current={path === entryDestination ? 'page' : undefined}><Icon size={19} strokeWidth={1.7} /><span>{label}</span><span className="nav-marker" /></NavLink>)}</nav>
         <div className="sidebar-bottom"><span className="sidebar-rule" /><p>Keep the details.<br />Find your next step.</p><NavLink className="settings-link" to="/settings"><Settings size={18} />Settings</NavLink></div></aside>}
       <div className="workspace">
         {visible && <div className="topbar"><span className="mobile-wordmark">daymargin.</span><span className="topbar-date">{dateLabel(today(), { weekday: 'long', month: 'long' })}</span><div className="topbar-actions"><span className="save-status">{preview && !user ? 'Local preview' : data.syncing ? 'Syncing…' : data.conflicts.length ? 'Review sync conflicts' : data.queue.length ? 'Waiting to sync' : data.lastSync ? 'Synced' : 'Saved on this device'}</span><button className="icon-button" aria-label="Open settings" onClick={() => navigate('/settings')}><Settings size={19} /></button></div></div>}
@@ -100,7 +110,7 @@ export default function App() {
           </Routes>}
         </main>
       </div>
-      {visible && <nav className="bottom-nav" aria-label="Mobile navigation">{destinations.map(({ path, label, icon: Icon }) => <NavLink key={path} to={path} end={path === '/'}><Icon size={21} strokeWidth={1.7} /><span>{label}</span></NavLink>)}</nav>}
+      {visible && <nav className="bottom-nav" aria-label="Mobile navigation">{destinations.map(({ path, label, icon: Icon }) => <NavLink key={path} to={path} end={path === '/'} className={navClass(path)} aria-current={path === entryDestination ? 'page' : undefined}><Icon size={21} strokeWidth={1.7} /><span>{label}</span></NavLink>)}</nav>}
     </div>
     {capture && <Capture day={location.pathname === '/calendar' ? new URLSearchParams(location.search).get('date') : null} onClose={() => setCapture(false)} />}
     {toast && <div className="toast" role="status"><span>{toast.message}</span>{toast.undo && <button onClick={async () => { try { await toast.undo(); setToast(null); } catch { notify('The change could not be undone. Please retry.'); } }}>Undo</button>}<button className="icon-button" aria-label="Dismiss message" onClick={() => setToast(null)}><X size={15} /></button></div>}

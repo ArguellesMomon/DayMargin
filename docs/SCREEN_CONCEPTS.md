@@ -4,13 +4,15 @@ Created October 11, 2026, Asia/Manila. Design specification selected under the u
 
 An initial coded version now follows this specification. See [Implementation status](IMPLEMENTATION_STATUS.md) for the exact coverage and limits, including the first build's manual-only repeating-series AI edits and unfinished scheduled push delivery.
 
+**Complete local UI review — October 11:** After reviewing Today and Calendar, the user requested all remaining pages. Library now uses dated/pinned groups and URL-persisted filters; expenses have a clearer period summary; Finn has a warmer opening and readable conversation; forms put essentials before More options; details, grouped Settings, welcome, account/recovery and setup screens follow the same Manrope hierarchy. Shared dialogs and parent navigation are also refined. See [remaining screen designs](REMAINING_UI.md) for the current implemented concepts and checks. These local revisions supersede the earlier layout descriptions where different; feature authority, record privacy, recurrence and confirmation rules remain applicable. No commit, push or deployment is authorized by this UI request.
+
 ## 1. Overall concept
 
 Daymargin is a personal daily notebook that connects plans, notes, and spending. The interface should make capture and finding information feel immediate. Today answers what matters now; Calendar shows time; Library holds records; Finn helps interpret them.
 
-**Selected design direction:** Warm paper and dark graphite, a muted forest-green accent, fine rules, and a small margin marker for section grouping. Rows carry most information; panels are reserved for summaries and action previews. Use Manrope for clean sans-serif typography, with system sans-serif fallbacks. Titles are confident without being oversized. Amounts and times use aligned numerals.
+**Selected design direction:** Yellow and white in light mode, red and near-black in dark mode, fine neutral rules, and a small margin marker for section grouping. Rows carry most information; panels are reserved for summaries and action previews. Use Manrope for clean sans-serif typography, with system sans-serif fallbacks. Titles are confident without being oversized. Amounts and times use aligned numerals.
 
-Light: warm off-white background, near-white entry surfaces, charcoal text. Dark: deep graphite background, gently lighter surfaces, soft light text. Both themes preserve the same hierarchy, spacing, and actions. The accent identifies selection and primary actions; status always includes words.
+Light: white entry surfaces, a near-white background, charcoal text and warm yellow primary actions. Dark: near-black background, charcoal surfaces, soft light text and red primary actions. Dark amber/light red handle accent text for contrast; see [Color scheme](COLOR_SCHEME.md). Both themes preserve the same hierarchy, spacing, and actions. The accent identifies selection and primary actions; status always includes words.
 
 **Selected navigation:** Four persistent labeled destinations: Today, Calendar, Library, Finn. Settings opens from the header. Add is a contextual action, not a fifth navigation destination. On narrow screens, secondary filters wrap instead of squeezing text.
 
@@ -48,19 +50,19 @@ Light: warm off-white background, near-white entry surfaces, charcoal text. Dark
 
 **Purpose:** Help users decide what to do next.
 
-**Concept:** The date and a quiet greeting at the top. The body has three ordered sections: Next on your schedule; Tasks needing attention; Recently saved. A compact Recorded spending today row links to Expenses. Keep the next event and due work more prominent than spending or recent notes.
+**Current local concept:** A personal greeting and Manila date under “Your day, in view.” One compact overview links to tasks, the combined timeline and recorded spending. A next-focus highlight shows an ongoing/next recorded plan or the first open task. Your next steps and Today's timeline form the main reading order; Finn and Recent notes provide a quieter supporting column on desktop and follow below on mobile. See [Today UI revision](TODAY_UI.md). This revision is local for review and has not been committed, pushed or deployed.
 
 **Actions:** Add opens quick capture. Tapping an event opens its details. Tasks have a completion control plus an independent detail action. Ask Finn transfers a question into chat without pretending an answer already exists.
 
-**Behavior:** Overdue tasks are grouped with their due date rather than hidden. All-day events remain clearly labeled. Completion provides Undo. Empty states suggest one useful action, such as Add your first task. A disconnected/pending-sync status appears only when relevant. Today is curated, not an endless mixed feed.
+**Behavior:** Overdue tasks retain their due dates. All-day events remain clearly labeled, recurring exceptions are respected, and reminders appear at their actual scheduled times. The current-plan highlight refreshes with Manila time. Completion updates the overview and provides Undo. Empty states suggest a useful action. Existing connection/sync feedback is retained. Today remains curated, with a seven-task limit and a link to the full task list.
 
 ## 6. Calendar
 
 **Purpose:** Make time commitments and available gaps understandable.
 
-**Concept:** A readable agenda opens by default. A compact week strip selects dates; a month picker expands for navigating farther. The header includes Today and Add event. Timed events show aligned start/end times; all-day items sit above them. Dated task deadlines and reminders appear in a separate Due that day group.
+**Concept — local UI revision:** A Monday-first week strip selects dates and marks events versus outstanding tasks/reminders. Previous/next week and Today sit beside a month button that opens a navigable month grid, keyboard date browsing and direct-date input. The selected-day heading summarizes events and outstanding due items. All-day plans sit above a timed agenda with aligned 12-hour start/end times, locations, repeats and overlap labels. A separate Due this day column groups tasks and standalone/attached reminders; on phones it follows the agenda. Typography and colors continue the Today revision. See [Calendar UI](CALENDAR_UI.md). This revision remains local pending explicit commit/push authorization.
 
-**Actions:** Select a date, browse the month, open an event, or create one for the selected date. A visible overlap label links conflicting timed events. Editing uses the same event record shown on Today.
+**Actions:** Select a date, browse the month, open an event, or create an event/task/reminder for the selected date. Each overlapping event shows a clear label and opens its occurrence details. Task completion updates date indicators and outstanding counts; completed tasks stay visible for reopening and Undo. Attached reminders link to their source record. Editing uses the same event record shown on Today.
 
 **Selected first-release behavior:** One-off and daily/weekly/monthly repeats. A repeating-series edit asks whether to change This occurrence or The series, shows the effect, and preserves exceptions. For a monthly day absent from a month, use that month's last day and explain this in the recurrence preview. Recurrence implementation must validate these rules before release.
 

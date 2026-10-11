@@ -68,7 +68,7 @@ Create a consistent master character, a compact avatar, a readable still pose, a
 
 ## Selected visual identity
 
-Retain the calm notebook direction: warm light surfaces, charcoal dark surfaces, Manrope sans-serif typography, fine separators, and a restrained muted green accent. A margin line or small page marker could become a consistent signature detail if it helps grouping or orientation. Evaluate it in the wireframe rather than adding decoration to every screen.
+Retain the calm notebook direction with the user's revised palette: yellow accents and white surfaces in light mode, red accents and near-black surfaces in dark mode. Use Manrope sans-serif typography and fine neutral separators. This supersedes the earlier muted-green palette; see [Color scheme](COLOR_SCHEME.md). A margin line or small page marker could become a consistent signature detail if it helps grouping or orientation. Evaluate it in the wireframe rather than adding decoration to every screen.
 
 ## Next design deliverable
 

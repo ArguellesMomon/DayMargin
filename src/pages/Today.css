@@ -1,0 +1,135 @@
+.today-page { --today-gap: 38px; }
+.today-page .today-header { display: flex; align-items: center; justify-content: space-between; gap: 24px; margin-bottom: 32px; }
+.today-page .today-greeting { color: var(--muted); font-size: 13px; font-weight: 500; margin-bottom: 12px; overflow-wrap: anywhere; }
+.today-page h1 { font-size: clamp(36px, 3.7vw, 52px); font-weight: 600; line-height: 1.12; letter-spacing: -2.4px; text-wrap: balance; }
+.today-page .today-date { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font-size: 12px; color: var(--muted); margin-top: 14px; line-height: 1.6; }
+.today-date-dot { width: 3px; height: 3px; border-radius: 50%; background: var(--muted); }
+.today-page .today-add { min-height: 46px; padding-inline: 17px; border-radius: 9px; }
+.today-overview { display: grid; grid-template-columns: 1fr 1fr 1.3fr; padding: 22px 0 25px; border-block: 1px solid var(--line); margin-bottom: var(--today-gap); }
+.today-overview > a { min-width: 0; padding-left: 26px; border-left: 1px solid var(--line); }
+.today-overview > a:first-child { padding-left: 0; border-left: 0; }
+.today-stat-label { display: flex; gap: 8px; align-items: center; color: var(--muted); font-size: 12px; font-weight: 500; }
+.today-overview strong { display: flex; align-items: baseline; flex-wrap: wrap; gap: 12px; margin-top: 9px; font-size: 30px; line-height: 1.25; letter-spacing: -1.3px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.today-overview strong small { color: var(--muted); font-size: 11px; font-weight: 400; letter-spacing: 0; }
+.today-overview a:hover .today-stat-label { color: var(--accent); }
+.today-overview .today-spending { font-size: 28px; color: var(--accent); }
+.today-body { display: grid; grid-template-columns: minmax(0, 1fr) 270px; gap: var(--today-gap); align-items: start; }
+.today-main { min-width: 0; }
+.today-spotlight { padding: 22px 24px; border: 1px solid var(--line); border-left: 3px solid var(--accent); border-radius: 0 12px 12px 0; background: var(--surface); margin-bottom: 36px; }
+.today-spotlight.is-current { background: var(--accent-soft); }
+.today-spotlight-caption { display: flex; align-items: center; gap: 8px; color: var(--accent); font-size: 10px; letter-spacing: 1.5px; font-weight: 700; }
+.today-live-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); }
+.today-focus-link { display: flex; align-items: center; gap: 22px; margin-top: 19px; min-width: 0; }
+.today-focus-time { font-size: 24px; line-height: 1.2; font-weight: 500; letter-spacing: -.8px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.today-focus-copy { flex: 1; min-width: 0; }
+.today-page .today-focus-copy h2 { font-size: 20px; line-height: 1.45; font-weight: 600; letter-spacing: -.5px; overflow-wrap: anywhere; }
+.today-focus-copy p { margin-top: 6px; font-size: 12px; color: var(--muted); line-height: 1.8; }
+.today-focus-link > svg { color: var(--accent); flex-shrink: 0; transition: transform .18s; }
+.today-focus-link:hover > svg { transform: translate(2px, -2px); }
+.today-focus-empty h2 { font-size: 21px; font-weight: 600; margin-top: 15px; }
+.today-focus-empty p { font-size: 12px; line-height: 1.8; color: var(--muted); margin-top: 6px; }
+.today-focus-empty .text-link { margin-top: 6px; }
+.today-page .today-section-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+.today-page .today-section-heading h2 { display: flex; align-items: center; gap: 10px; font-size: 18px; font-weight: 600; letter-spacing: -.5px; line-height: 1.4; }
+.today-count { display: inline-flex; align-items: center; justify-content: center; min-width: 23px; height: 23px; padding: 0 6px; border-radius: 50%; color: var(--muted); background: var(--sidebar); font-size: 11px; font-weight: 500; letter-spacing: 0; }
+.today-page .today-section-heading .text-link { font-size: 11px; white-space: nowrap; }
+.today-tasks, .today-timeline { scroll-margin-top: 20px; margin-bottom: 34px; }
+.today-task-list { border-top: 1px solid var(--line); }
+.today-page .today-task-list .entry-row { min-height: 78px; gap: 12px; }
+.today-page .today-task-list .entry-title { font-size: 14px; font-weight: 500; line-height: 1.6; overflow-wrap: anywhere; }
+.today-page .today-task-list .entry-meta { font-size: 11px; -webkit-line-clamp: 2; }
+.today-page .today-task-list .task-check { border-color: var(--muted); width: 20px; height: 20px; }
+.today-page .today-task-list .tag { max-width: 86px; overflow: hidden; text-overflow: ellipsis; font-size: 10px; }
+.today-page .today-task-list .row-arrow { opacity: .6; }
+.today-more { margin-top: 12px; }
+.today-empty { display: flex; gap: 14px; align-items: flex-start; padding: 23px 0 18px; border-top: 1px solid var(--line); }
+.today-empty-icon { display: flex; align-items: center; justify-content: center; background: var(--accent-soft); color: var(--accent); border-radius: 50%; width: 36px; height: 36px; flex-shrink: 0; }
+.today-page .today-empty h3 { font-size: 14px; font-weight: 600; letter-spacing: -.2px; }
+.today-empty p { font-size: 12px; color: var(--muted); line-height: 1.8; margin-top: 4px; }
+.today-agenda { border-top: 1px solid var(--line); }
+.today-agenda-item { display: grid; grid-template-columns: 72px 20px minmax(0, 1fr) 15px; gap: 12px; align-items: center; padding: 18px 0; position: relative; min-height: 82px; }
+.today-agenda-item + .today-agenda-item { border-top: 1px solid var(--line); }
+.today-agenda-time { display: flex; flex-direction: column; gap: 6px; font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.today-agenda-time small { font-size: 10px; color: var(--muted); font-weight: 400; }
+.today-agenda-marker { display: flex; justify-content: center; align-items: center; color: var(--muted); }
+.today-agenda-marker > span { border: 1px solid var(--muted); width: 7px; height: 7px; border-radius: 50%; }
+.today-agenda-content { min-width: 0; }
+.today-agenda-title { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: 14px; line-height: 1.7; font-weight: 500; overflow-wrap: anywhere; }
+.today-agenda-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; margin-top: 5px; font-size: 11px; color: var(--muted); line-height: 1.7; }
+.today-agenda-arrow { color: var(--muted); opacity: .6; }
+.today-agenda-item:hover .today-agenda-arrow { color: var(--accent); opacity: 1; }
+.today-agenda-item.is-current .today-agenda-marker > span { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); }
+.today-now { color: var(--accent); font-size: 10px; padding: 2px 7px; border-radius: 4px; background: var(--accent-soft); font-weight: 600; }
+.today-agenda-item.is-earlier .today-agenda-time { color: var(--muted); }
+.today-overlap { color: var(--danger); }
+.today-page .today-finn { padding: 20px 22px 22px; margin: 0 0 30px; background: var(--accent-soft); border: 1px solid var(--line); border-radius: 12px; }
+.today-finn-top { display: flex; align-items: flex-start; gap: 10px; justify-content: space-between; }
+.today-panel-label { color: var(--accent); font-size: 9px; letter-spacing: 1.4px; font-weight: 700; line-height: 1.8; max-width: 105px; padding-top: 8px; }
+.today-page .today-finn .finn-avatar { width: 92px; height: 92px; float: none; margin: 0 -8px -3px 0; }
+.today-page .today-finn h2 { font-size: 27px; line-height: 1.25; letter-spacing: -1px; font-weight: 600; margin-top: 6px; }
+.today-page .today-finn p { font-size: 12px; line-height: 1.9; color: var(--muted); margin: 13px 0 19px; }
+.today-finn-link { display: flex; align-items: center; justify-content: space-between; padding-top: 16px; border-top: 1px solid var(--line); color: var(--accent); font-size: 12px; font-weight: 600; min-height: 44px; }
+.today-notes .today-section-heading { margin-bottom: 2px; }
+.today-notes .icon-button { width: 44px; height: 44px; }
+.today-note { display: block; padding: 18px 0; border-bottom: 1px solid var(--line); }
+.today-note-meta { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 10px; }
+.today-note-meta > span { margin-left: auto; display: flex; align-items: center; gap: 5px; }
+.today-page .today-note h3 { font-size: 14px; font-weight: 600; line-height: 1.6; margin: 9px 0 6px; letter-spacing: -.2px; overflow-wrap: anywhere; }
+.today-note p { font-size: 12px; line-height: 1.85; color: var(--muted); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; white-space: pre-line; overflow-wrap: anywhere; }
+.today-note-open { display: flex; align-items: center; gap: 5px; color: var(--accent); font-size: 10px; margin-top: 12px; }
+.today-notes-all { margin-top: 12px; }
+.today-note-empty { border-top: 1px solid var(--line); padding: 20px 0; }
+.today-note-empty > svg { color: var(--muted); margin-bottom: 10px; }
+.today-page .today-note-empty h3 { font-size: 14px; font-weight: 600; }
+.today-note-empty p { font-size: 12px; color: var(--muted); line-height: 1.9; margin-top: 5px; }
+@media (max-width: 1100px) {
+  .today-page { --today-gap: 28px; }
+  .today-body { grid-template-columns: minmax(0, 1fr) 235px; }
+  .today-overview strong small { flex-basis: 100%; }
+  .today-focus-link { flex-wrap: wrap; gap: 12px; }
+  .today-focus-time { flex-basis: 100%; font-size: 22px; }
+}
+@media (max-width: 900px) {
+  .today-body { grid-template-columns: 1fr; }
+  .today-side { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; align-items: start; }
+  .today-page .today-finn { margin-bottom: 0; }
+}
+@media (max-width: 600px) {
+  .today-page { --today-gap: 25px; }
+  .today-page .today-header { align-items: flex-start; gap: 15px; position: relative; margin-bottom: 25px; }
+  .today-page .today-header > div { width: 100%; }
+  .today-page .today-greeting { padding-right: 130px; font-size: 12px; margin-bottom: 9px; min-height: 44px; display: flex; align-items: center; }
+  .today-page h1 { font-size: 37px; letter-spacing: -1.8px; }
+  .today-page .today-add { position: absolute; top: 0; right: 0; min-height: 44px; padding: 10px 11px; font-size: 12px; gap: 5px; }
+  .today-page .today-add svg { width: 15px; }
+  .today-page .today-date { margin-top: 11px; font-size: 11px; gap: 7px; }
+  .today-overview { padding: 18px 0; }
+  .today-overview > a { padding-left: 13px; }
+  .today-stat-label { font-size: 11px; gap: 5px; }
+  .today-stat-label svg { width: 12px; height: 12px; }
+  .today-overview strong { font-size: 26px; margin-top: 9px; gap: 5px; }
+  .today-overview .today-spending { font-size: 23px; overflow-wrap: anywhere; }
+  .today-overview strong small { font-size: 10px; line-height: 1.5; }
+  .today-spotlight { padding: 18px; margin-bottom: 28px; }
+  .today-focus-link { gap: 10px; margin-top: 15px; }
+  .today-page .today-focus-copy h2 { font-size: 18px; }
+  .today-focus-copy p { font-size: 11px; }
+  .today-page .today-section-heading h2 { font-size: 17px; }
+  .today-page .today-task-list .entry-row { gap: 9px; }
+  .today-page .today-task-list .entry-row { min-height: 70px; }
+  .today-page .today-task-list .entry-title { font-size: 14px; }
+  .today-page .today-task-list .entry-meta { font-size: 12px; }
+  .today-page .today-task-list .tag { max-width: 66px; font-size: 9px; }
+  .today-agenda-item { grid-template-columns: 64px 14px minmax(0, 1fr) 13px; gap: 8px; }
+  .today-agenda-time { font-size: 11px; }
+  .today-agenda-title { font-size: 14px; }
+  .today-side { grid-template-columns: 1fr; gap: 28px; }
+  .today-page .today-finn { padding: 20px; }
+  .today-finn-top { float: right; margin-left: 15px; }
+  .today-panel-label { display: none; }
+  .today-page .today-finn .finn-avatar { width: 105px; height: 105px; margin: 0; }
+  .today-page .today-finn h2 { font-size: 27px; margin-top: 0; }
+  .today-page .today-finn p { margin: 12px 0 16px; }
+  .today-finn-link { clear: both; }
+  .today-page .today-note h3 { font-size: 15px; }
+}

@@ -8,6 +8,7 @@ import '@fontsource/manrope/latin-700.css';
 import '@fontsource/manrope/latin-800.css';
 import App from './App.jsx';
 import './styles.css';
+import './workspace-ui.css';
 
 class ErrorBoundary extends React.Component {
   state = { failed: false };

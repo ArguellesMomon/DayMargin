@@ -1,34 +1,70 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Plus, CalendarDays, Circle, FileText, Wallet } from 'lucide-react';
+import { ArrowRight, ArrowUpRight, Plus, CalendarDays, Check, FileText, Wallet, Bell, Pin, MapPin } from 'lucide-react';
 import { useDaymargin } from '../context.jsx';
-import { EntryRow, Empty, FinnAvatar, PageHeading, Section } from '../components/UI.jsx';
-import { dateLabel, expenseSummary, isComplete, money, occurrence, occursOn, today } from '../lib/domain.js';
+import { EntryRow, FinnAvatar } from '../components/UI.jsx';
+import { dateLabel, money, timeLabel, titleOf } from '../lib/domain.js';
+import { todayView } from '../lib/today-view.js';
+import './Today.css';
+
+function SectionHeading({ id, title, count, children }) {
+  return <div className="today-section-heading"><h2 id={id}>{title}{count !== undefined && <span className="today-count">{count}</span>}</h2>{children}</div>;
+}
 
 export default function Today() {
   const { data, user, openCapture } = useDaymargin();
-  const day = today();
-  const records = data.records.filter(r => !r.deleted);
-  const events = records.filter(r => r.type === 'event' && occursOn(r, day)).map(r => occurrence(r, day)).sort((a, b) => Number(b.allDay) - Number(a.allDay) || a.start.localeCompare(b.start));
-  const tasks = records.filter(r => r.type === 'task' && !isComplete(r, day) && (!r.date || (r.recurrence === 'none' ? r.date <= day : occursOn(r, day)))).sort((a, b) => (a.date || '9999').localeCompare(b.date || '9999'));
-  const reminders = records.filter(r => r.type === 'reminder' && occursOn(r, day) || r.reminderAt?.slice(0, 10) === day && !isComplete(r, day)).map(r => occurrence(r, day));
-  const notes = records.filter(r => r.type === 'note').sort((a, b) => Number(b.pinned) - Number(a.pinned) || b.updatedAt.localeCompare(a.updatedAt)).slice(0, 3);
-  const spending = expenseSummary(records, { start: day, end: day });
-  const name = user?.user_metadata?.display_name?.split(' ')[0];
-  return <><PageHeading eyebrow={name ? `A DAY OF YOUR OWN, ${name.toUpperCase()}` : 'A DAY OF YOUR OWN'} title="A little room for today." action={<button className="button primary" onClick={openCapture}><Plus size={18} />Add an entry</button>}>Your plans, your thoughts, and the next small step.</PageHeading>
-    <div className="today-grid"><div>
-      <Section label="Next on your schedule" count={events.length} action={<Link className="text-link" to="/calendar">View calendar <ArrowRight size={14} /></Link>}>
-        {events.length ? <div className="agenda-preview">{events.map(r => <EntryRow key={r.id} record={r} day={day} />)}</div> : <Empty icon={CalendarDays} title="A little space in your schedule." text="No events recorded for today." action={<Link className="text-link" to={`/new/event?day=${day}`}>Add an event <Plus size={14} /></Link>} />}
-      </Section>
-      <Section label="Tasks needing attention" count={tasks.length} action={<Link className="text-link" to="/library?filter=tasks">All tasks <ArrowRight size={14} /></Link>}>
-        {tasks.length ? tasks.slice(0, 7).map(r => <EntryRow key={r.id} record={r} day={r.recurrence === 'none' ? undefined : day} />) : <Empty icon={Circle} title="Nothing waiting on you." text="Add a task when your next step comes to mind." action={<Link className="text-link" to="/new/task">Add a task <Plus size={14} /></Link>} />}
-      </Section>
-      {reminders.length > 0 && <Section label="Reminders today" count={reminders.length}>{reminders.map(r => <EntryRow key={r.id} record={r} day={day} asReminder />)}</Section>}
-      <Section label="Recently saved" action={<Link className="text-link" to="/library?filter=notes">Your notes <ArrowRight size={14} /></Link>}>
-        {notes.length ? notes.map(r => <EntryRow key={r.id} record={r} compact />) : <Empty icon={FileText} title="Keep the thought." text="A note is a good place to start." action={<Link className="text-link" to="/new/note">Write a note <Plus size={14} /></Link>} />}
-      </Section>
-    </div><aside className="today-aside">
-      <div className="day-stamp"><span>{dateLabel(day, { weekday: 'long' }).split(',')[0]}</span><strong>{day.slice(8)}</strong><span>{dateLabel(day, { month: 'long', year: 'numeric' }).replace(/\d{1,2},?\s*/, '')}</span><div className="stamp-line" /></div>
-      <div className="spending-snapshot"><Wallet size={19} strokeWidth={1.5} /><p>Recorded spending today</p><strong>{money(spending.totalCents)}</strong><span>{spending.entries.length} {spending.entries.length === 1 ? 'entry' : 'entries'} · PHP</span><Link className="text-link" to="/library?filter=expenses&period=today">View expenses <ArrowRight size={14} /></Link></div>
-      <div className="finn-invitation"><FinnAvatar size="medium" /><span className="eyebrow">A SECOND PERSPECTIVE</span><h3>A small question.<br />A clearer next step.</h3><p>Ask Finn to work through what you’ve saved.</p><Link className="text-link" to="/finn?question=What%20needs%20my%20attention%20today%3F">Ask Finn <ArrowRight size={14} /></Link></div>
-    </aside></div></>;
+  const [now, setNow] = useState(() => new Date());
+  useEffect(() => {
+    const refresh = () => { if (!document.hidden) setNow(new Date()); };
+    const timer = setInterval(refresh, 60000);
+    window.addEventListener('focus', refresh);
+    document.addEventListener('visibilitychange', refresh);
+    return () => { clearInterval(timer); window.removeEventListener('focus', refresh); document.removeEventListener('visibilitychange', refresh); };
+  }, []);
+  const { day, greeting, tasks, overdue, events, agenda, next, notes, spending } = todayView(data.records, now);
+  const name = user?.user_metadata?.display_name?.trim().split(/\s+/)[0];
+  const spotlight = next?.record || tasks[0];
+  const spotlightLabel = next ? next.current ? 'HAPPENING NOW' : next.allDay ? 'ON TODAY’S CALENDAR' : 'UP NEXT' : tasks.length ? 'FIRST ON YOUR LIST' : 'THE REST OF TODAY';
+
+  return <div className="today-page">
+    <header className="today-header">
+      <div><p className="today-greeting">{greeting}{name ? `, ${name}` : ''}.</p><h1>Your day, in view.</h1><p className="today-date">{dateLabel(day, { weekday: 'long', month: 'long' })}<span className="today-date-dot" />Asia/Manila</p></div>
+      <button className="button primary today-add" onClick={openCapture}><Plus size={18} />Add an entry</button>
+    </header>
+    <nav className="today-overview" aria-label="Today's overview">
+      <a href="#today-tasks"><span className="today-stat-label"><Check size={15} />Open tasks</span><strong>{tasks.length}<small>{overdue ? `${overdue} overdue` : tasks.length ? 'One step at a time' : 'A clear list'}</small></strong></a>
+      <a href="#today-timeline"><span className="today-stat-label"><CalendarDays size={15} />Plans today</span><strong>{events.length}<small>On your calendar</small></strong></a>
+      <Link to="/library?filter=expenses&period=today"><span className="today-stat-label"><Wallet size={15} />Spent today</span><strong className="today-spending">{money(spending.totalCents)}<small>{spending.entries.length} recorded {spending.entries.length === 1 ? 'entry' : 'entries'}</small></strong></Link>
+    </nav>
+    <div className="today-body"><div className="today-main">
+      <section className={`today-spotlight ${next?.current ? 'is-current' : ''}`} aria-label="Next focus">
+        <div className="today-spotlight-caption"><span className="today-live-dot" /><span>{spotlightLabel}</span>{next?.type === 'reminder' && <Bell size={13} />}</div>
+        {spotlight ? <Link className="today-focus-link" to={`/record/${spotlight.id}${next || spotlight.recurrence !== 'none' ? `?day=${day}` : ''}`}>
+          {next && <span className="today-focus-time">{next.allDay ? 'All day' : timeLabel(next.time)}</span>}
+          <div className="today-focus-copy"><h2>{titleOf(spotlight)}</h2><p>{next ? next.type === 'reminder' ? 'Reminder · In-app' : [next.end && !next.allDay ? `Until ${timeLabel(next.end)}` : 'On today’s calendar', spotlight.location].filter(Boolean).join(' · ') : spotlight.date ? `${spotlight.date < day && spotlight.recurrence === 'none' ? 'Overdue · ' : 'Due '}${dateLabel(spotlight.recurrence === 'none' ? spotlight.date : day)}` : 'No due date'}</p></div>
+          <ArrowUpRight size={21} />
+        </Link> : <div className="today-focus-empty"><h2>A little space ahead.</h2><p>No later timed plans or open tasks recorded.</p><Link className="text-link" to={`/new/event?day=${day}`}>Add a plan <ArrowRight size={15} /></Link></div>}
+      </section>
+      <section className="today-tasks" aria-labelledby="today-tasks">
+        <SectionHeading id="today-tasks" title="Your next steps" count={tasks.length}><Link className="text-link" to="/library?filter=tasks">All tasks <ArrowUpRight size={14} /></Link></SectionHeading>
+        {tasks.length ? <><div className="today-task-list">{tasks.slice(0, 7).map(record => <EntryRow key={record.id} record={record} day={record.recurrence === 'none' ? undefined : day} />)}</div>{tasks.length > 7 && <Link className="text-link today-more" to="/library?filter=tasks">View all {tasks.length} open tasks <ArrowRight size={14} /></Link>}</> : <div className="today-empty"><span className="today-empty-icon"><Check size={19} /></span><div><h3>Your list is clear.</h3><p>Add a task when something needs doing.</p><Link className="text-link" to="/new/task">Add a task <Plus size={14} /></Link></div></div>}
+      </section>
+      <section className="today-timeline" aria-labelledby="today-timeline">
+        <SectionHeading id="today-timeline" title="Today's timeline"><Link className="text-link" to="/calendar">View calendar <ArrowUpRight size={14} /></Link></SectionHeading>
+        {agenda.length ? <div className="today-agenda">{agenda.map(item => <Link key={item.key} className={`today-agenda-item ${item.current ? 'is-current' : ''} ${item.earlier ? 'is-earlier' : ''}`} to={`/record/${item.record.id}?day=${day}`}>
+          <span className="today-agenda-time">{item.allDay ? 'All day' : timeLabel(item.time)}<small>{item.end && !item.allDay ? timeLabel(item.end) : item.type === 'reminder' ? 'Reminder' : ''}</small></span>
+          <span className="today-agenda-marker">{item.type === 'reminder' ? <Bell size={13} /> : <span />}</span>
+          <span className="today-agenda-content"><span className="today-agenda-title">{titleOf(item.record)}{item.current && <span className="today-now">Now</span>}</span><span className="today-agenda-meta">{item.record.location && item.type === 'event' ? <><MapPin size={12} />{item.record.location}</> : item.type === 'reminder' ? 'In-app reminder' : item.allDay ? 'On your calendar' : 'Calendar event'}{item.overlap && <span className="today-overlap">Overlaps another event</span>}{item.earlier && <span> · Earlier</span>}</span></span>
+          <ArrowUpRight className="today-agenda-arrow" size={15} />
+        </Link>)}</div> : <div className="today-empty"><span className="today-empty-icon"><CalendarDays size={19} /></span><div><h3>No plans on the page yet.</h3><p>Keep appointments and reminders in one timeline.</p><Link className="text-link" to={`/new/event?day=${day}`}>Add an event <Plus size={14} /></Link></div></div>}
+      </section>
+    </div>
+    <aside className="today-side" aria-label="Finn and recent notes">
+      <section className="finn-invitation today-finn"><div className="today-finn-top"><span className="today-panel-label">A SECOND PERSPECTIVE</span><FinnAvatar size="medium" /></div><h2>A little help<br />from Finn.</h2><p>Let’s work through what you’ve saved.</p><Link className="today-finn-link" to="/finn?question=What%20needs%20my%20attention%20today%3F">Talk it through <ArrowUpRight size={18} /></Link></section>
+      <section className="today-notes" aria-labelledby="today-notes"><SectionHeading id="today-notes" title="Recent notes"><Link className="icon-button" aria-label="Write a note" to="/new/note"><Plus size={17} /></Link></SectionHeading>
+        {notes.length ? <div className="today-note-list">{notes.map(record => <Link key={record.id} className="today-note" to={`/record/${record.id}`}><span className="today-note-meta"><FileText size={13} />Note{record.pinned && <span><Pin size={11} />Pinned</span>}</span><h3>{titleOf(record)}</h3><p>{record.body || 'Open this note to add a thought.'}</p><span className="today-note-open">Open note <ArrowUpRight size={13} /></span></Link>)}</div> : <div className="today-note-empty"><FileText size={20} strokeWidth={1.5} /><h3>Make room for a thought.</h3><p>A quick idea, a list, something to return to.</p><Link className="text-link" to="/new/note">Write a note <ArrowRight size={14} /></Link></div>}
+        {notes.length > 0 && <Link className="text-link today-notes-all" to="/library?filter=notes">All your notes <ArrowRight size={14} /></Link>}
+      </section>
+    </aside></div>
+  </div>;
 }

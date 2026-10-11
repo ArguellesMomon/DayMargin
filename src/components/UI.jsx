@@ -20,13 +20,13 @@ export function FinnAvatar({ size = 'small', thinking = false, reply = 0 }) {
 export function PageHeading({ eyebrow, title, children, action }) {
   return <header className="page-heading"><div><p className="eyebrow">{eyebrow}</p><h1>{title}</h1>{children && <p className="page-description">{children}</p>}</div>{action}</header>;
 }
-export function Section({ label, count, action, children, className = '' }) {
-  return <section className={`section ${className}`}><div className="section-heading"><h2><span className="margin-mark" />{label}{count !== undefined && <span className="count">{count}</span>}</h2>{action}</div>{children}</section>;
+export function Section({ label, count, action, children, className = '', id }) {
+  return <section id={id} className={`section ${className}`}><div className="section-heading"><h2><span className="margin-mark" />{label}{count !== undefined && <span className="count">{count}</span>}</h2>{action}</div>{children}</section>;
 }
 export function Empty({ icon: Icon = FileText, title, text, action }) {
   return <div className="empty"><Icon size={23} strokeWidth={1.4} /><h3>{title}</h3><p>{text}</p>{action}</div>;
 }
-export function EntryRow({ record, day, compact = false, overlap = false, asReminder = false }) {
+export function EntryRow({ record, day, compact = false, overlap = false, asReminder = false, showType = false, returnTo }) {
   const { data, notify, preview } = useDaymargin();
   const Icon = asReminder ? Bell : TYPE_META[record.type].icon;
   const completed = isComplete(record, day || record.occurrenceDate || today());
@@ -44,7 +44,8 @@ export function EntryRow({ record, day, compact = false, overlap = false, asRemi
   }
   return <div className={`entry-row ${compact ? 'compact' : ''} ${completed && record.type === 'task' ? 'done' : ''}`}>
     {record.type === 'task' && !asReminder ? <button type="button" className="task-check" aria-label={`${completed ? 'Reopen' : 'Complete'} ${titleOf(record)}`} onClick={complete}>{completed ? <Check size={15} /> : null}</button> : <span className={`entry-icon ${record.type}`}><Icon size={19} strokeWidth={1.65} /></span>}
-    <Link className="entry-content" to={`/record/${record.id}${query}`}>
+    <Link className="entry-content" to={`/record/${record.id}${query}`} state={returnTo ? { returnTo } : undefined}>
+      {showType && <span className="entry-kind">{TYPE_META[record.type].label}</span>}
       <span className="entry-title">{titleOf(record)}{record.pinned && <Pin size={12} aria-label="Pinned" />}</span>
       <span className="entry-meta">
         {asReminder && record.reminderAt ? `${timeLabel(record.reminderAt.slice(11))} · Attached ${record.type} reminder · In-app`
@@ -63,7 +64,7 @@ export function EntryRow({ record, day, compact = false, overlap = false, asRemi
 }
 export function Dialog({ title, children, onClose, className = '' }) {
   const ref = useRef(null);
-  useEffect(() => { const dialog = ref.current; dialog.showModal(); return () => { dialog.close(); }; }, []);
+  useEffect(() => { const dialog = ref.current; const trigger = document.activeElement; dialog.showModal(); return () => { dialog.close(); if (trigger?.isConnected) trigger.focus(); }; }, []);
   return <dialog aria-label={title} className={`dialog ${className}`} ref={ref} onCancel={event => { event.preventDefault(); onClose(); }} onClick={event => { if (event.target === ref.current) onClose(); }}>
     <div className="dialog-heading"><h2>{title}</h2><button className="icon-button" type="button" aria-label="Close dialog" onClick={onClose}><X size={20} /></button></div>{children}
   </dialog>;
