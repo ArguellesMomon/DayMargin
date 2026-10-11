@@ -65,6 +65,26 @@ test('answers casual chat using the built-in personality and authenticated recen
   expect(payload).toMatchObject({ reasoning_effort: 'low', include_reasoning: false, max_completion_tokens: 2048 });
   expect(mocks.store.reserve.mock.calls[0][1]).toEqual({ user: 1000, shared: 1000, minute: 30 });
 });
+test('keeps a fuller personal reply and its follow-up within the request budget', async () => {
+  const personalAnswer = `Bro, that first sketch matters because you actually sat down and made something after putting it off. You do not have to grade it like a final exam. Getting an idea out of your head and onto a page is already the part that was holding you up, and you did that. Give yourself a minute to enjoy it instead of immediately hunting for everything you could improve.
+
+If you feel like picking up the pencil again, you could draw one small thing from the same scene, or leave it alone for today and come back with fresh eyes. No dramatic new routine required. I would be curious what you enjoyed most: figuring out the shapes, adding the details, or finally seeing it take form. What did you draw?`;
+  fetchMock.mockImplementation(async () => provider(JSON.stringify({ answer: personalAnswer, sources: [], action: null })));
+  const first = response();
+  await handler({ method: 'POST', headers: {}, body: { question: 'I finished my first sketch after putting it off for days.' } }, first);
+  expect(first.statusCode).toBe(200); expect(first.body.answer).toBe(personalAnswer);
+  const second = response();
+  await handler({ method: 'POST', headers: {}, body: { question: 'It was a cat.', history: [first.body.memory] } }, second);
+  expect(second.statusCode).toBe(200);
+  const payload = JSON.parse(fetchMock.mock.calls[1][1].body);
+  expect(payload.messages[2].role).toBe('assistant');
+  expect(JSON.parse(payload.messages[2].content).answer).toBe(personalAnswer);
+});
+test('the richer built-in personality still accepts a maximum-length question', async () => {
+  const res = response();
+  await handler({ method: 'POST', headers: {}, body: { question: 'x'.repeat(1000) } }, res);
+  expect(res.statusCode).toBe(200); expect(fetchMock).toHaveBeenCalledOnce();
+});
 test('preserves accounting and identifies a provider reply cut short by its token limit', async () => {
   fetchMock.mockResolvedValue(new Response(JSON.stringify({ choices: [{ finish_reason: 'length', message: { content: '{"answer":"' } }], usage: { prompt_tokens: 800, completion_tokens: 2048, total_tokens: 2848 } })));
   const res = await ask();

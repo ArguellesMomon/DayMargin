@@ -130,7 +130,7 @@ The Add trigger sits in the page header/action area and remains accessible withi
 
 **Purpose:** Help users interpret their records and decide a next action.
 
-**Concept:** A compact header with Finn's avatar, name, and chat-history access. Before a conversation, show three useful starter questions: What needs my attention? Summarize my spending. Help me plan tomorrow. Messages prioritize readable text, source links, and concise next steps. The composer stays usable above the keyboard.
+**Concept:** A compact header with Finn's avatar, name, and chat-history access. Before a conversation, show three starter questions: What needs my attention today? Summarize my spending this month. I need a little motivation. Personal messages get warm, conversational paragraphs; saved-entry answers include source links and clear facts. The composer stays usable above the keyboard.
 
 **Response structure:** A clear answer first, a short explanation, linked supporting entries, then an optional proposed action. Show which period and records were considered when relevant. Do not turn every response into a large card.
 
@@ -138,7 +138,7 @@ The Add trigger sits in the page header/action area and remains accessible withi
 
 **Behavior:** Current permitted records form the context, including expenses and schedule information. Excluded records do not influence answers. Expense numbers come from application calculations. New replies need connectivity in the planned server-based AI design; users can read cached chats offline. Label stale time-sensitive advice when revisiting old chat and offer a refresh. AI failures preserve the question and provide Retry.
 
-**Zero-payment scope:** Finn handles lightweight everyday questions with concise replies. Call the model when the user asks, using relevant permitted records within a bounded context. When the free allowance is exhausted, preserve the question and show Finn is temporarily unavailable. Please try again later. Provide a retry time only when known; ordinary organizer screens stay usable. Do not show payment prompts or silently use a paid fallback. Groq Free is the provider recommendation; final model quality and actual limits need validation.
+**Zero-payment scope:** Finn handles lightweight everyday questions and fuller personal conversation. Call the model on demand with bounded context; greetings and simple facts can stay brief. Errors preserve the question and provide explicit retry, with known timing when available and no forced countdown. Ordinary organizer screens stay usable. Groq Free is connected; no payment prompts or paid fallback exist. Account-specific capacity and broader model quality need ongoing validation.
 
 ## 14. Finn action review
 
@@ -166,7 +166,7 @@ Every screen needs a usable empty state, purposeful loading state, saved/pending
 
 **Selected appearance:** A small animated 2D white Pomeranian with round charcoal glasses. Fluffy cheeks and chest, upright ears, a compact muzzle, soft cream/grey fur shading, attentive eyes, and a slight knowing smile. The glasses have clear lenses and a thin bridge so expressions stay legible. No costume is needed; the silhouette, eyes, and frames provide the identity.
 
-**Personality:** Smart, upbeat, witty, and a supportive hype bro, following the user's latest direction. Finn chats about random thoughts as well as the organizer, with occasional natural slang and concise encouragement. He stays precise for expenses and gentle for difficult moments. English only, no emojis or shaming. Recent exchanges can support follow-ups after server privacy checks; see [Finn personality](FINN_PERSONALITY.md).
+**Personality:** Smart, warm, cheeky, and a personal bro-dude character. Finn reacts to what the user shares, uses natural “bro” or “dude,” and has light snack-break/glasses quirks. Personal topics usually get two or three conversational paragraphs rather than a technical one-liner or task checklist. He stays precise for expenses and gentle for difficult moments. English only, no emojis or shaming. Recent exchanges can support follow-ups after server privacy checks; see [Finn personality](FINN_PERSONALITY.md).
 
 **Placement:** Small avatar in chat; a larger drawing only in welcome/setup or an empty chat. He does not interrupt logging or sit over controls. In light mode, shading defines the white silhouette; in dark mode, the same white fur carries the character without a glow.
 

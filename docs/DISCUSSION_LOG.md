@@ -275,3 +275,11 @@ Added IMPLEMENTATION_STATUS.md with document-to-code mapping and SETUP.md with l
 
 
 **Completed production validation:** Migration applied to production after temporary-branch verification; the test branch was deleted. The first live casual attempt returned HTTP 502 from the output-validation path; it did not establish whether truncation or decorative emojis caused that response. Raise the completion allowance from 600 to 2,048 tokens, identify provider truncation explicitly, and remove decorative emojis from otherwise valid replies. All 66 checks pass, with successful Vercel deployments through `fc288e6`. A fresh disposable account then received three consecutive real replies without intentional waits: empty-library encouragement, first-sketch conversation recall, and exact computed PHP 0.30 spending with two valid references after entries were added. Usage reconciled to 927/996/1,188 tokens, all requests finished, and the account/entries/request rows were deleted. The separate browser test verifies immediate explicit retry and conversation reset without reload. No paid fallback was added.
+
+## Warmer personal bro-dude voice — October 11, 2026
+
+**User refinement:** More personality and more conversation, rather than cold technical replies; Finn should feel like a personal bro-dude character.
+
+**Changes:** Replace the terse casual-chat/150-word default and rare “bro” direction with a warmer, more expressive voice. Finn reacts to what the user shares before advising, uses natural “bro”/“dude” and cheeky humor, and has light snack-break/glasses quirks. Personal topics usually receive two or three short paragraphs (roughly 80–180 words when useful); greetings/simple facts can stay brief. Add fictional built-in dialogue examples, avoid automatic productivity checklists, repeated slogans, technical boilerplate and exaggerated praise for unseen work. Saved facts, PHP calculations, exclusion checks and confirmation rules remain required. No extra delay, cooldown or provider was introduced.
+
+**Pre-deployment validation:** All 68 logic/API/database checks and the production build pass, including retaining a fuller personal reply in follow-up context and accepting the maximum-length question under the existing request budget. Existing chat styling preserves paragraph breaks. Live voice checks follow.

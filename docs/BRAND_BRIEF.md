@@ -31,7 +31,7 @@ Suggested copy examples:
 
 **Confirmed by the user:** An animated 2D white Pomeranian who looks witty and smart.
 
-**Latest conversation direction:** Supportive hype bro: upbeat, personable, witty, and able to chat casually. The professional product typography and restrained motion stay consistent. Finn adapts his tone to the message and keeps factual summaries precise. See [Finn personality](FINN_PERSONALITY.md) for the built-in voice, examples, and follow-up privacy rules.
+**Latest conversation direction:** A personal bro-dude character: warm, cheeky, supportive, and able to sustain casual conversation. Fuller responses for personal topics, comfortable “bro”/“dude,” and small glasses/snack-break quirks make Finn recognizable. The professional typography and restrained motion stay consistent; factual summaries stay precise. See [Finn personality](FINN_PERSONALITY.md) for the built-in dialogue examples and follow-up privacy rules.
 
 **Selected accessory direction under delegated design judgment:** Small round charcoal glasses. The user suggested glasses and later delegated the character concept. Exact proportions will be refined in the production drawing.
 
