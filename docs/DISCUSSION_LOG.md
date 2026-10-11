@@ -289,3 +289,11 @@ Added IMPLEMENTATION_STATUS.md with document-to-code mapping and SETUP.md with l
 **Focused fact-voice refinement:** The next live run produced warmer 92/73-word paragraphs and remembered the sketch/cat context, but the expense answer still embellished the category despite an explicit reminder. Recorded-spending questions now select a focused friendly Finn prompt without fictional social examples or quirks, sharing the same grounding/action contract. Personal conversation retains the fuller character voice. All 69 checks pass, including server selection of the factual voice with correct computed context; no data schema, delay, provider or payment changes. Test accounts/data were deleted. Final production verification follows.
 
 **Final live verification:** Vercel successfully deployed `2bb3fcf`. A fresh disposable account received 95/98-word two-paragraph personal replies with “bro”/“dude,” playful character observations and remembered sketch/cat follow-up context. The third response gave the exact PHP 0.30 total and two Food expenses (PHP 0.20/0.10), with two valid references and no invented item details or spending judgment. All three leases finished and reconciled to 1,197/1,366/1,030 tokens. The account and all synthetic data were deleted. All 69 checks and the build pass; real model wording and provider availability can vary.
+
+## October 11, 2026 — User-selected spritesheet
+
+**User direction:** Asked whether `samo.zip` could be used, received an explanation of spritesheet playback and its different appearance, then said “ok keep the spritesheet.”
+
+**Selected:** Use the supplied WebP unchanged for Finn. Its source metadata identifies Samo, a Samoyed; Daymargin keeps the name Finn and personal bro-dude voice. The earlier Pomeranian-with-glasses artwork direction is superseded.
+
+**Implemented:** Discrete mapped blink/head-tilt/reply-wave sequences, accurate accessible avatar description, still reduced-motion behavior for both system and app settings, and PWA precaching. Reply motion is independent of network/send timing and runs only after a successful new answer. Character prompt details now match the appearance without glasses. The source includes some colored fringe pixels; it has not been regenerated or recolored. Original master files are retained as history. See [sprite asset record](../assets/finn/spritesheet.md).

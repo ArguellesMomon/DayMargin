@@ -238,7 +238,7 @@ React JS remains the selected frontend requirement; Vite is proposed for builds.
 - The app contains no emojis.
 - Application-authored copy, notifications, and Finn replies are English-only; original user records are preserved.
 - Expense displays use PHP and initial schedules/reminder interpretation use Asia/Manila consistently.
-- Finn appears as a smart, witty animated 2D white Pomeranian; reduced-motion mode supplies a still alternative.
+- Finn uses the user-selected fluffy white dog spritesheet, with a smart, witty personal voice; reduced-motion mode supplies a still alternative.
 - Finn can answer questions spanning different supported entry types and link to the records behind factual summaries.
 - Finn handles missing information, conflicting entries, excluded records, stale records, and failed requests clearly.
 - Finn never modifies a record before the user confirms a specific preview; cancelled or stale proposals do not change saved records.
@@ -254,3 +254,9 @@ React JS remains the selected frontend requirement; Vite is proposed for builds.
 Audience, expense depth, Finn's confirmation requirement, account/sync direction, localization, naming, visual direction, screen structure, and Finn's styling are settled through user decisions and delegated design judgment. [Screen concepts](SCREEN_CONCEPTS.md) defines the main/supporting pages, capture, recurrence, reminder-channel direction, and AI action review. A mobile concept walkthrough accompanies the discussion.
 
 Next: an implemented mobile prototype and integrations based on the [Technical plan](TECHNICAL_PLAN.md). Vercel and Neon are selected, the native notification-permission flow is defined, and Finn's first master drawing is created. Free AI account/model validation, completed animation, real-device notification verification, and tested synchronization mechanics remain outstanding.
+
+## Supplied spritesheet decision — October 11, 2026
+
+The user chose to keep `samo.zip`'s spritesheet for Finn after reviewing how it differs from the original design. The current runtime appearance is a fluffy white dog without glasses; the ZIP metadata calls the source character Samo, a Samoyed. Daymargin retains the name Finn and his warm personal bro-dude voice. This decision supersedes the earlier Pomeranian-with-glasses asset direction below. The master PNG and generation record remain as design history.
+
+The original WebP is used unchanged with a mapped idle blink, thinking/head tilt, and one brief wave after a successful new reply. Written status remains visible, reduced-motion preferences keep Finn still, and the PWA caches the sheet for offline screens. Source fringe pixels remain in the supplied artwork. See [sprite asset record](../assets/finn/spritesheet.md).

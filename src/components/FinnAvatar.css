@@ -1,0 +1,53 @@
+/* Samo sheet: eight columns, nine rows, 192 × 208 pixels per cell. */
+.finn-avatar .finn-sprite {
+  display: block;
+  height: 100%;
+  aspect-ratio: 12 / 13;
+  flex-shrink: 0;
+  background-image: url('/finn-spritesheet.webp');
+  background-repeat: no-repeat;
+  background-size: 800% 900%;
+  background-position: 0% 0%;
+  animation: finn-sprite-idle 6s steps(1, end) infinite;
+}
+
+.finn-avatar[data-motion='thinking'] .finn-sprite {
+  animation: finn-sprite-thinking 3s steps(1, end) infinite;
+}
+
+.finn-avatar[data-motion='reply'] .finn-sprite {
+  animation: finn-sprite-wave 1.1s steps(1, end) 1,
+    finn-sprite-idle 6s steps(1, end) 1.1s infinite;
+}
+
+@keyframes finn-sprite-idle {
+  0%, 88%, 100% { background-position: 0% 0%; }
+  90%, 94% { background-position: 14.285714% 0%; }
+  92% { background-position: 28.571429% 0%; }
+  96% { background-position: 0% 0%; }
+}
+
+@keyframes finn-sprite-thinking {
+  0%, 66%, 100% { background-position: 42.857143% 0%; }
+  18%, 50% { background-position: 57.142857% 0%; }
+}
+
+@keyframes finn-sprite-wave {
+  0%, 68% { background-position: 0% 37.5%; }
+  12%, 36% { background-position: 14.285714% 37.5%; }
+  24%, 48% { background-position: 28.571429% 37.5%; }
+  84% { background-position: 42.857143% 37.5%; }
+  100% { background-position: 0% 0%; }
+}
+
+:root[data-reduced-motion='true'] .finn-avatar .finn-sprite {
+  animation: none !important;
+  background-position: 0% 0%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .finn-avatar .finn-sprite {
+    animation: none !important;
+    background-position: 0% 0%;
+  }
+}

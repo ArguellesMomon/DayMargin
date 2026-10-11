@@ -12,6 +12,7 @@ export default function Finn() {
   const [search, setSearch] = useSearchParams();
   const [question, setQuestion] = useState(search.get('question') || '');
   const [busy, setBusy] = useState(false);
+  const [reply, setReply] = useState(0);
   const [error, setError] = useState('');
   const [historyOpen, setHistoryOpen] = useState(false);
   const [review, setReview] = useState(null);
@@ -21,7 +22,7 @@ export default function Finn() {
   const input = useRef(null);
   const messages = data.chats;
   useEffect(() => { if (search.get('question')) { setQuestion(search.get('question')); setSearch({}, { replace: true }); } }, [search, setSearch]);
-  useEffect(() => { bottom.current?.scrollIntoView({ behavior: 'auto', block: 'nearest' }); }, [messages.length]);
+  useEffect(() => { bottom.current?.scrollIntoView({ behavior: 'auto', block: 'nearest' }); }, [messages.length, busy]);
   async function ask(event) {
     event?.preventDefault();
     const text = question.trim();
@@ -30,6 +31,7 @@ export default function Finn() {
     if (!online) { setError('Finn needs a connection for a new answer. Your question is still here.'); return; }
     if (preview || !user) { setError('Finn’s AI replies are not connected in this local preview. Your question is still here for when the service is ready.'); return; }
     if (data.queue.length || data.conflicts.length) { setError('Sync your latest changes and resolve conflicts first so Finn uses the current records.'); return; }
+    setReply(0);
     setBusy(true);
     try {
       const history = messages.filter(message => message.role === 'assistant' && typeof message.memory === 'string').slice(-3).map(message => message.memory);
@@ -39,6 +41,7 @@ export default function Finn() {
       await data.chat([...messages, { id: crypto.randomUUID(), role: 'user', content: text, createdAt: now },
         { id: crypto.randomUUID(), role: 'assistant', content: result.answer, sources: result.sources, memory: result.memory || null, action: result.action || null, createdAt: now }]);
       setQuestion('');
+      setReply(value => value + 1);
     } catch (e) {
       setError(e.name === 'TimeoutError' ? 'Finn took too long to respond. Your question is still here. Please retry.' : e.message);
     }
@@ -62,7 +65,7 @@ export default function Finn() {
     } catch (e) { setReviewError(e.message); }
     finally { setApplying(false); }
   }
-  return <div className="finn-page"><header className="finn-heading"><div><FinnAvatar /><span><h1>Finn</h1><small>Your everyday hype bro</small></span></div><div><button className="icon-button" aria-label="Chat history" onClick={() => setHistoryOpen(true)}><History size={20} /></button><button className="icon-button" aria-label="Start a new chat" onClick={() => setHistoryOpen(true)}><Plus size={20} /></button></div></header>
+  return <div className="finn-page"><header className="finn-heading"><div><FinnAvatar thinking={busy} reply={reply} /><span><h1>Finn</h1><small>Your everyday hype bro</small></span></div><div><button className="icon-button" aria-label="Chat history" onClick={() => setHistoryOpen(true)}><History size={20} /></button><button className="icon-button" aria-label="Start a new chat" onClick={() => setHistoryOpen(true)}><Plus size={20} /></button></div></header>
     <div className="chat-content">{messages.length === 0 ? <div className="finn-welcome"><FinnAvatar size="large" /><p className="eyebrow">LET’S WORK IT THROUGH</p><h2>A little clarity<br />goes a long way.</h2><p>A plan, a random thought, or a little motivation?<br />I’m in. Let’s work it through.</p><div className="starter-questions">{questions.map(q => <button key={q} onClick={() => { setQuestion(q); input.current?.focus(); }}>{q}<ArrowUpRight size={16} /></button>)}</div></div> : <div className="messages">{messages.map(message => <article key={message.id} className={`message ${message.role}`}><div className="message-label">{message.role === 'assistant' ? 'Finn' : 'You'}<span>{new Date(message.createdAt).toLocaleTimeString('en-PH', { timeZone: 'Asia/Manila', hour: 'numeric', minute: '2-digit' })}</span></div><p>{message.content}</p>{message.role === 'assistant' && <>{message.sources?.length > 0 && <p className="chat-age">Based on entries saved when this answer was written.</p>}{message.sources?.length > 0 && <div className="source-links">{message.sources.map(id => { const r = data.records.find(r => r.id === id && !r.deleted); return r ? <Link key={id} to={`/record/${id}`}>{titleOf(r)}<ArrowUpRight size={12} /></Link> : <span key={id}>Entry no longer available</span>; })}</div>}{message.action && <button className="button subtle small" onClick={() => { setReview(message); setReviewError(''); }}>Review proposed change <ArrowUpRight size={14} /></button>}{message.appliedRecordId && <Link className="text-link" to={`/record/${message.appliedRecordId}`}>View saved change <ArrowUpRight size={14} /></Link>}</>}</article>)}</div>}
       {busy && <div className="thinking-status" role="status"><FinnAvatar thinking /><span>Finn is thinking…</span></div>}<div ref={bottom} /></div>
     <div className="chat-bottom">{preview && <p className="chat-preview-note">Local preview · AI replies are not connected yet.</p>}{error && <div className="notice error" role="alert">{error}<button onClick={ask} disabled={busy}>Retry</button></div>}<form className="chat-composer" onSubmit={ask}><textarea ref={input} aria-label="Ask Finn a question" placeholder="A question, a thought, a next step…" rows={2} value={question} maxLength={1000} onChange={e => setQuestion(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); ask(); } }} /><button aria-label="Send question to Finn" className="send-button" disabled={busy || !question.trim()}><ArrowUp size={20} /></button></form><p className="chat-footnote"><ShieldCheck size={12} />Permitted entries only. Changes wait for your confirmation.</p></div>

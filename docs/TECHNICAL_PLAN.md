@@ -105,3 +105,9 @@ The master PNG is a still character design. Blinking, thinking/head tilt, noddin
 Before release, exercise the actual user flows: sign-in and recovery, record isolation between accounts, offline capture/reconnect, duplicate/conflicting edits, reminder edits/cancellation, Allow/Block/Not now permission flows, supported Android/iPhone push behavior, current-source Finn answers, and confirmation-only writes. Check mobile keyboard layout, both themes, reduced motion, and the final mascot at real display sizes.
 
 The organizer and Neon connection are implemented. Remaining integration work is Groq Free, scheduled Web Push, production email delivery configuration, Vercel hosting, and actual mobile-device verification.
+
+## Supplied spritesheet decision — October 11, 2026
+
+The user chose to keep `samo.zip`'s spritesheet for Finn after reviewing how it differs from the original design. The current runtime appearance is a fluffy white dog without glasses; the ZIP metadata calls the source character Samo, a Samoyed. Daymargin retains the name Finn and his warm personal bro-dude voice. This decision supersedes the earlier Pomeranian-with-glasses asset direction below. The master PNG and generation record remain as design history.
+
+The original WebP is used unchanged with a mapped idle blink, thinking/head tilt, and one brief wave after a successful new reply. Written status remains visible, reduced-motion preferences keep Finn still, and the PWA caches the sheet for offline screens. Source fringe pixels remain in the supplied artwork. See [sprite asset record](../assets/finn/spritesheet.md).

@@ -8,7 +8,7 @@ export default defineConfig(({ mode }) => ({
   plugins: [localApi(loadLocalEnvironment(mode, process.cwd())), react(), VitePWA({
     strategies: 'injectManifest', srcDir: 'src', filename: 'sw.js',
     registerType: 'prompt', injectRegister: false,
-    includeAssets: ['icon.svg', 'apple-touch-icon.png', 'finn.png'],
+    includeAssets: ['icon.svg', 'apple-touch-icon.png', 'finn-spritesheet.webp'],
     manifest: {
       name: 'Daymargin', short_name: 'Daymargin', description: 'Your daily organizer.',
       theme_color: '#315a48', background_color: '#f5f4ef', display: 'standalone',
@@ -16,7 +16,7 @@ export default defineConfig(({ mode }) => ({
       icons: [{ src: '/icon-192.png', sizes: '192x192', type: 'image/png' },
         { src: '/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' }],
     },
-    injectManifest: { globPatterns: ['**/*.{js,css,html,png,svg,woff2}'] },
+    injectManifest: { globPatterns: ['**/*.{js,css,html,png,svg,webp,woff2}'] },
     devOptions: { enabled: false },
   })],
   test: { environment: 'node', include: ['tests/**/*.test.js'] },

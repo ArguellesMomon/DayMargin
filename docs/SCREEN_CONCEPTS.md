@@ -179,3 +179,9 @@ Every screen needs a usable empty state, purposeful loading state, saved/pending
 ## 18. What these decisions settle
 
 The four main destinations, supporting screens, initial organization, general visual direction, first-release recurrence rules, reminder-channel direction, Finn's supported single-record actions, and the character styling are selected through the user's delegated design instruction. Vercel and Supabase were initially selected by the user; the account/database choice was subsequently changed to Neon, and the native notification-permission pop-up is required. Finn must use a zero-payment API for lightweight everyday assistance; Groq Free is recommended. [Technical plan](TECHNICAL_PLAN.md) defines the architecture, AI controls, and permission/delivery flow. [Finn's master drawing](../assets/finn/finn-master-v1.png) is now created. Free AI account/model validation, animation assets, real-device notification support, and further mobile synchronization verification remain outstanding; live Neon synchronization is now implemented and tested.
+
+## Supplied spritesheet decision — October 11, 2026
+
+The user chose to keep `samo.zip`'s spritesheet for Finn after reviewing how it differs from the original design. The current runtime appearance is a fluffy white dog without glasses; the ZIP metadata calls the source character Samo, a Samoyed. Daymargin retains the name Finn and his warm personal bro-dude voice. This decision supersedes the earlier Pomeranian-with-glasses asset direction below. The master PNG and generation record remain as design history.
+
+The original WebP is used unchanged with a mapped idle blink, thinking/head tilt, and one brief wave after a successful new reply. Written status remains visible, reduced-motion preferences keep Finn still, and the PWA caches the sheet for offline screens. Source fringe pixels remain in the supplied artwork. See [sprite asset record](../assets/finn/spritesheet.md).

@@ -1,6 +1,6 @@
 # Daymargin
 
-A mobile-first daily organizer for Filipino users, with notes, reminders, schedules, expenses, and Finn: an animated 2D white Pomeranian companion.
+A mobile-first daily organizer for Filipino users, with notes, reminders, schedules, expenses, and Finn: an animated fluffy white dog companion.
 
 **Daymargin** is the app name selected under the user's delegated naming decision. The project folder retains its original label, finn-daily, to preserve existing file links.
 
@@ -39,7 +39,7 @@ As of October 11, 2026:
 - Data: accounts with cloud sync across devices and offline core-record access, selected under the user's delegated judgment.
 
 - Localization: PHP, Asia/Manila, and English only, including Finn's replies.
-- Finn's appearance: animated 2D white Pomeranian, witty and smart, with round charcoal glasses selected through delegated design judgment.
+- Finn's appearance: the user's supplied fluffy white dog spritesheet, with blinking, thinking/head-tilt and reply-wave animation. This replaces the earlier Pomeranian-with-glasses design.
 - App name: Daymargin, selected under delegated judgment.
 
 - Design: four main destinations, warm paper/graphite themes, muted green, Manrope typography, light organization through tags and pins.
@@ -48,7 +48,7 @@ As of October 11, 2026:
 - AI: zero-payment, lightweight everyday chat through an authenticated server endpoint connected to Groq Free. Casual messages and recent follow-ups are supported; provider limits still apply. No paid fallback.
 - Notifications: a user-triggered native browser permission pop-up, backed by a scheduled Web Push delivery design.
 
-Screen concepts and a technical plan are documented. Finn's first transparent master drawing is integrated. Thinking uses a small CSS tilt with a still reduced-motion alternative; distinct blink/nod artwork and scheduled notification delivery remain to complete and validate.
+Screen concepts and a technical plan are documented. Finn uses the supplied transparent spritesheet with discrete blink, thinking/head-tilt and reply-wave sequences. Device and app reduced-motion preferences show a still pose. The sheet is cached for offline views; scheduled notification delivery remains unfinished. See the [sprite asset record](assets/finn/spritesheet.md).
 
 ## Documentation
 
@@ -59,7 +59,7 @@ Screen concepts and a technical plan are documented. Finn's first transparent ma
 - [Technical plan](docs/TECHNICAL_PLAN.md): Vercel/Neon, the AI endpoint, notification permission/delivery, and proposed synchronization.
 - [Implementation status](docs/IMPLEMENTATION_STATUS.md): what is coded, how the original documents informed it, validation, and limits.
 - [Setup](docs/SETUP.md): local use, Neon migration, environment configuration, and Vercel deployment instructions.
-- [Finn master drawing](assets/finn/finn-master-v1.png) and [generation record](assets/finn/finn-master-v1.prompt.md).
+- [Current sprite asset record](assets/finn/spritesheet.md); [original Finn master drawing](assets/finn/finn-master-v1.png) and [generation record](assets/finn/finn-master-v1.prompt.md) retained as design history.
 
 ## Working rules
 

@@ -1,6 +1,6 @@
 # Daymargin — Brand and character brief
 
-Created October 11, 2026, Asia/Manila. Design specification with the first master drawing now created; animation assets remain outstanding.
+Created October 11, 2026, Asia/Manila. Finn now uses the user's supplied spritesheet; the latest decision at the end supersedes the earlier master-drawing direction.
 
 ## Name and purpose
 
@@ -83,3 +83,9 @@ This is a still master character design, not an animated asset. Consistent blink
 ## First coding milestone
 
 The original master PNG is now integrated into welcome, Today, and Finn chat. The coded interface uses local Manrope fonts, Lucide icons, warm paper/graphite themes, muted green, and margin markers. A CSS portrait crop improves the compact avatar, and a small thinking tilt respects reduced motion. Separate blink/nod/glasses-adjustment artwork remains outstanding; transforming the still image is not a claim that those assets are complete. See [Implementation status](IMPLEMENTATION_STATUS.md).
+
+## Supplied spritesheet decision — October 11, 2026
+
+The user chose to keep `samo.zip`'s spritesheet for Finn after reviewing how it differs from the original design. The current runtime appearance is a fluffy white dog without glasses; the ZIP metadata calls the source character Samo, a Samoyed. Daymargin retains the name Finn and his warm personal bro-dude voice. This decision supersedes the earlier Pomeranian-with-glasses asset direction below. The master PNG and generation record remain as design history.
+
+The original WebP is used unchanged with a mapped idle blink, thinking/head tilt, and one brief wave after a successful new reply. Written status remains visible, reduced-motion preferences keep Finn still, and the PWA caches the sheet for offline screens. Source fringe pixels remain in the supplied artwork. See [sprite asset record](../assets/finn/spritesheet.md).

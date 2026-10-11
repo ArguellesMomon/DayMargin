@@ -3,6 +3,7 @@ import { ArrowRight, Check, Circle, FileText, CalendarDays, Bell, Wallet, Pin, X
 import { Link } from 'react-router-dom';
 import { dateLabel, isComplete, money, timeLabel, titleOf, today, toggleComplete } from '../lib/domain.js';
 import { useDaymargin } from '../context.jsx';
+import './FinnAvatar.css';
 
 export const TYPE_META = {
   task: { icon: Circle, label: 'Task', description: 'A small step to get done' },
@@ -11,8 +12,10 @@ export const TYPE_META = {
   expense: { icon: Wallet, label: 'Expense', description: 'Spending, simply recorded' },
   event: { icon: CalendarDays, label: 'Event', description: 'A place in your schedule' },
 };
-export function FinnAvatar({ size = 'small', thinking = false }) {
-  return <span className={`finn-avatar ${size} ${thinking ? 'thinking' : ''}`}><img src="/finn.png" alt="Finn, a white Pomeranian with round glasses" /></span>;
+export function FinnAvatar({ size = 'small', thinking = false, reply = 0 }) {
+  return <span className={`finn-avatar ${size}`} role="img" aria-label="Finn, a fluffy white dog" data-motion={thinking ? 'thinking' : reply ? 'reply' : 'idle'}>
+    <span key={reply} className="finn-sprite" aria-hidden="true" />
+  </span>;
 }
 export function PageHeading({ eyebrow, title, children, action }) {
   return <header className="page-heading"><div><p className="eyebrow">{eyebrow}</p><h1>{title}</h1>{children && <p className="page-description">{children}</p>}</div>{action}</header>;
