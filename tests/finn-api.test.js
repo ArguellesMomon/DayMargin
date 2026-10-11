@@ -1,12 +1,14 @@
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
 const mocks = vi.hoisted(() => ({ store: {
   list: vi.fn(), reserve: vi.fn(), finishReservation: vi.fn(), finnLimitStatus: vi.fn(),
+  get: vi.fn(),
 } }));
 vi.mock('../server/http.js', async importOriginal => ({
   ...await importOriginal(), authenticated: async () => ({ store: mocks.store }),
 }));
 import handler from '../api/finn.js';
 import { reportedTokenUsage } from '../server/finn.js';
+import { recordSchema, today } from '../src/lib/domain.js';
 
 let fetchMock;
 const output = { answer: 'There are no saved entries to summarize yet.', sources: [], action: null };
@@ -39,6 +41,19 @@ test('charges valid reported usage even if generated JSON is invalid', async () 
   fetchMock.mockResolvedValue(provider('not json'));
   expect((await ask()).statusCode).toBe(502);
   expect(mocks.store.finishReservation).toHaveBeenCalledWith('lease', 1000);
+});
+test('Neon Date timestamps are normalized before Finn sorts equally relevant saved entries', async () => {
+  const rows = [10, 20].map(amountCents => ({
+    id: crypto.randomUUID(), version: 1, deleted: false,
+    created_at: new Date(), updated_at: new Date(),
+    data: recordSchema.parse({ type: 'expense', date: today(), category: 'Food', amountCents }),
+  }));
+  mocks.store.list.mockResolvedValue(rows); mocks.store.get.mockResolvedValue(rows);
+  expect((await ask()).statusCode).toBe(200);
+  const payload = JSON.parse(fetchMock.mock.calls[0][1].body);
+  const context = JSON.parse(payload.messages[1].content).permittedContext;
+  expect(context.records).toHaveLength(2);
+  expect(context.calculatedSpending.totalCents).toBe(30);
 });
 test('unreported usage and provider failures retain the conservative reservation', async () => {
   fetchMock.mockResolvedValue(new Response('{}', { status: 503 }));

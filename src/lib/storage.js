@@ -18,7 +18,8 @@ export function mutateSnapshot(snapshot, input, { cloud = false, deleted = false
     queue: cloud ? [...snapshot.queue, { id: crypto.randomUUID(), recordId: id, expectedVersion: old?.version || 0, data, deleted }] : snapshot.queue };
 }
 export const fromServer = row => ({ ...row.data, id: row.id, version: row.version, deleted: row.deleted,
-  createdAt: row.created_at, updatedAt: row.updated_at });
+  createdAt: row.created_at instanceof Date ? row.created_at.toISOString() : row.created_at,
+  updatedAt: row.updated_at instanceof Date ? row.updated_at.toISOString() : row.updated_at });
 export function reconcile(snapshot, remote) {
   // Pending/conflicting changes keep their local version until an explicit resolution.
   const pending = new Set([...snapshot.queue.map(q => q.recordId), ...snapshot.conflicts.map(c => c.recordId)]);
