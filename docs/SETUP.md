@@ -57,7 +57,7 @@ Daily app allowances reset at midnight in Asia/Manila. Groq rate limits have sep
 
 Finn's built-in personality now supports upbeat hype-bro conversation and random everyday questions. Three recent server-signed exchanges can support follow-ups, subject to account, expiry and current-library checks. Any saved-entry change invalidates old derived context. See [Finn personality](FINN_PERSONALITY.md).
 
-Current initial model recommendation, researched October 11, 2026: `openai/gpt-oss-20b`, listed in Groq's production models and Free Plan limits. Enable Global/Inference ZDR in Groq before setting the acknowledgment flags. Live two-question, computed PHP total and saved-note citation checks are recorded in Implementation status; broader model quality and outage/quota behavior still need evaluation. Keep credentials server-only and the account on Free.
+Current model recommendation, researched October 11, 2026: `openai/gpt-oss-20b`, listed in Groq's production models and Free Plan limits. Enable Global/Inference ZDR before setting acknowledgment flags. GPT-OSS requests use low reasoning with a 2,048-token completion allowance (including reasoning). Replies remain concise; decorative emojis are stripped. Live casual conversation, follow-up recall, three consecutive answers, computed PHP totals and saved-record references are verified in Implementation status. Broader quality and outage/quota behavior still need evaluation. Keep credentials server-only and the account on Free.
 
 Proposals are private, expire in ten minutes, and require exact-preview confirmation. Applying rechecks ownership, exclusions, deletion and version. Repeating-series AI edits remain manual in this build.
 
