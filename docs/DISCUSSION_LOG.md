@@ -297,3 +297,13 @@ Added IMPLEMENTATION_STATUS.md with document-to-code mapping and SETUP.md with l
 **Selected:** Use the supplied WebP unchanged for Finn. Its source metadata identifies Samo, a Samoyed; Daymargin keeps the name Finn and personal bro-dude voice. The earlier Pomeranian-with-glasses artwork direction is superseded.
 
 **Implemented:** Discrete mapped blink/head-tilt/reply-wave sequences, accurate accessible avatar description, still reduced-motion behavior for both system and app settings, and PWA precaching. Reply motion is independent of network/send timing and runs only after a successful new answer. Character prompt details now match the appearance without glasses. The source includes some colored fringe pixels; it has not been regenerated or recolored. Original master files are retained as history. See [sprite asset record](../assets/finn/spritesheet.md).
+
+## October 11, 2026 — Finn movement was not apparent
+
+**User report:** No animation or movements were visible on Today or Finn chat.
+
+**Finding:** A live browser probe with motion enabled captured mostly identical avatar images; the original idle sequence held its first pose for over five seconds and blinked briefly. Earlier checks validated animation names/state transitions but did not adequately test ongoing visible movement.
+
+**Correction:** Medium/large illustrations greet with a short wave. All avatars now cycle through blink, head tilt and smile frames over 3.2 seconds, while thinking begins with an immediate tilt and repeats over 1.6 seconds. Reduced-motion preferences still keep the character still. New checks compare actual rendered frames and sample ongoing playback on both Today and Finn, without AI calls or access to real user records.
+
+**User clarification:** Reduce motion was enabled, and the user described animation as slow. Explained that this setting disables Finn's animation rather than controlling its speed; turn it off for normal playback. The app preserves the preference. Its normal playback has also been made faster and more apparent.

@@ -8,28 +8,32 @@
   background-repeat: no-repeat;
   background-size: 800% 900%;
   background-position: 0% 0%;
-  animation: finn-sprite-idle 6s steps(1, end) infinite;
+  animation: finn-sprite-idle 3.2s steps(1, end) infinite;
 }
 
 .finn-avatar[data-motion='thinking'] .finn-sprite {
-  animation: finn-sprite-thinking 3s steps(1, end) infinite;
+  animation: finn-sprite-thinking 1.6s steps(1, end) infinite;
 }
 
-.finn-avatar[data-motion='reply'] .finn-sprite {
+.finn-avatar[data-motion='reply'] .finn-sprite,
+.finn-avatar[data-motion='idle'][data-greeting='true'] .finn-sprite {
   animation: finn-sprite-wave 1.1s steps(1, end) 1,
-    finn-sprite-idle 6s steps(1, end) 1.1s infinite;
+    finn-sprite-idle 3.2s steps(1, end) 1.1s infinite;
 }
 
 @keyframes finn-sprite-idle {
-  0%, 88%, 100% { background-position: 0% 0%; }
-  90%, 94% { background-position: 14.285714% 0%; }
-  92% { background-position: 28.571429% 0%; }
-  96% { background-position: 0% 0%; }
+  0%, 92%, 100% { background-position: 0% 0%; }
+  8%, 24% { background-position: 14.285714% 0%; }
+  16% { background-position: 28.571429% 0%; }
+  36%, 72% { background-position: 42.857143% 0%; }
+  52% { background-position: 57.142857% 0%; }
+  84% { background-position: 71.428571% 0%; }
 }
 
 @keyframes finn-sprite-thinking {
-  0%, 66%, 100% { background-position: 42.857143% 0%; }
-  18%, 50% { background-position: 57.142857% 0%; }
+  0%, 75%, 100% { background-position: 57.142857% 0%; }
+  25% { background-position: 42.857143% 0%; }
+  50% { background-position: 28.571429% 0%; }
 }
 
 @keyframes finn-sprite-wave {

@@ -13,7 +13,7 @@ export const TYPE_META = {
   event: { icon: CalendarDays, label: 'Event', description: 'A place in your schedule' },
 };
 export function FinnAvatar({ size = 'small', thinking = false, reply = 0 }) {
-  return <span className={`finn-avatar ${size}`} role="img" aria-label="Finn, a fluffy white dog" data-motion={thinking ? 'thinking' : reply ? 'reply' : 'idle'}>
+  return <span className={`finn-avatar ${size}`} role="img" aria-label="Finn, a fluffy white dog" data-motion={thinking ? 'thinking' : reply ? 'reply' : 'idle'} data-greeting={size !== 'small'}>
     <span key={reply} className="finn-sprite" aria-hidden="true" />
   </span>;
 }

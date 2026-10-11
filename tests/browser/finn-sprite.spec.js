@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { createHash } from 'node:crypto';
 
 async function isolatedChat(page) {
   await page.route('**/api/auth/**', route => route.fulfill({ json:
@@ -9,6 +10,35 @@ async function isolatedChat(page) {
   }));
   await page.route('**/api/records*', route => route.fulfill({ json: { records: [], next: null } }));
 }
+
+test('Today and Finn show actual moving frames on arrival and during idle', async ({ page }) => {
+  await isolatedChat(page);
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  for (const [path, selector] of [['/', '.finn-invitation .finn-avatar'], ['/finn', '.finn-welcome .finn-avatar']]) {
+    await page.goto(path);
+    const avatar = page.locator(selector);
+    await avatar.scrollIntoViewIfNeeded();
+    await avatar.locator('.finn-sprite').evaluate(async el => {
+      const image = new Image(); image.src = getComputedStyle(el).backgroundImage.slice(5, -2); await image.decode();
+    });
+    const snapshots = new Set();
+    for (let sample = 0; sample < 8; sample++) {
+      const pixels = await avatar.screenshot({ animations: 'allow' });
+      snapshots.add(createHash('sha256').update(pixels).digest('hex'));
+      await page.waitForTimeout(150);
+    }
+    expect(snapshots.size, `${path}: the character's rendered pixels should visibly change`).toBeGreaterThanOrEqual(3);
+    // Inspect real-time idle playback after the one-shot arrival wave finishes.
+    const positions = await avatar.locator('.finn-sprite').evaluate(el => new Promise(resolve => {
+      const result = new Set(); const start = performance.now();
+      const timer = setInterval(() => {
+        result.add(getComputedStyle(el).backgroundPosition);
+        if (performance.now() - start >= 2000) { clearInterval(timer); resolve([...result]); }
+      }, 80);
+    }));
+    expect(positions.length, `${path}: idle should continue changing frames`).toBeGreaterThanOrEqual(3);
+  }
+});
 
 test('sprite follows a new reply without delaying sending and respects both motion preferences', async ({ page }) => {
   await isolatedChat(page);
