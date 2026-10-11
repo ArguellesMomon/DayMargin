@@ -44,7 +44,10 @@ const editable = ['type', 'title', 'body', 'date', 'start', 'end', 'allDay', 'lo
 export function validateFinnOutput(output, context, records) {
   const result = outputSchema.safeParse(output);
   if (!result.success) throw new HttpError(502, 'Finn could not finish a clear answer. Your question is preserved; please retry.');
-  if (/\p{Extended_Pictographic}|[\u{1F1E6}-\u{1F1FF}]/u.test(result.data.answer)) throw new HttpError(502, 'Finn could not finish a clear answer. Please retry.');
+  // Enforce the product's plain-text style without throwing away an otherwise
+  // useful reply when a model adds decorative emoji despite its instructions.
+  result.data.answer = result.data.answer.replace(/\p{Extended_Pictographic}\uFE0F?(?:[\u{1F3FB}-\u{1F3FF}]|[\u{E0020}-\u{E007F}])*(?:\u200D\p{Extended_Pictographic}\uFE0F?[\u{1F3FB}-\u{1F3FF}]?)*|[\u{1F1E6}-\u{1F1FF}]{1,2}|[#*0-9]\uFE0F?\u20E3/gu, '').replace(/[ \t]+/g, ' ').trim();
+  if (!result.data.answer) throw new HttpError(502, 'Finn could not finish a clear answer. Please retry.');
   const permitted = new Set(context.records.map(r => r.id));
   // Summary source IDs are also legitimate sources even if the full text was not selected.
   for (const id of context.calculatedSpending.recordIds) permitted.add(id);

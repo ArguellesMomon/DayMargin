@@ -44,6 +44,12 @@ test('charges valid reported usage even if generated JSON is invalid', async () 
   expect((await ask()).statusCode).toBe(502);
   expect(mocks.store.finishReservation).toHaveBeenCalledWith('lease', 1000);
 });
+test('removes decorative emoji without rejecting a useful casual reply or altering PHP amounts', async () => {
+  fetchMock.mockResolvedValue(provider(JSON.stringify({ answer: 'Bro \u{1F389} you did it. PHP 0.30, 2 entries. \u{1F1F5}\u{1F1ED} \u{1F469}\u{1F3FD}\u200D\u{1F4BB} 1\uFE0F\u20E3', sources: [], action: null })));
+  const res = await ask();
+  expect(res.statusCode).toBe(200); expect(res.body.answer).toBe('Bro you did it. PHP 0.30, 2 entries.');
+  expect(mocks.store.finishReservation).toHaveBeenCalledWith('lease', 1000);
+});
 test('answers casual chat using the built-in personality and authenticated recent follow-up context', async () => {
   const memory = conversationMemory(mocks.store.ownerId, 'Suggest a hobby.', 'Try sketching.', [], 'test-only-key');
   const answer = { answer: 'Start with a five-minute sketch, bro. One page, no pressure.', sources: [], action: null };
@@ -56,8 +62,14 @@ test('answers casual chat using the built-in personality and authenticated recen
   expect(payload.messages[0].content).toBe(systemPrompt);
   expect(payload.messages[0].content).toContain('supportive hype bro');
   expect(payload.messages[1].content).toBe('Suggest a hobby.');
-  expect(payload).toMatchObject({ reasoning_effort: 'low', include_reasoning: false });
+  expect(payload).toMatchObject({ reasoning_effort: 'low', include_reasoning: false, max_completion_tokens: 2048 });
   expect(mocks.store.reserve.mock.calls[0][1]).toEqual({ user: 1000, shared: 1000, minute: 30 });
+});
+test('preserves accounting and identifies a provider reply cut short by its token limit', async () => {
+  fetchMock.mockResolvedValue(new Response(JSON.stringify({ choices: [{ finish_reason: 'length', message: { content: '{"answer":"' } }], usage: { prompt_tokens: 800, completion_tokens: 2048, total_tokens: 2848 } })));
+  const res = await ask();
+  expect(res.statusCode).toBe(502); expect(res.body.error).toContain('reply was cut short');
+  expect(mocks.store.finishReservation).toHaveBeenCalledWith('lease', 2848);
 });
 test('Neon Date timestamps are normalized before Finn sorts equally relevant saved entries', async () => {
   const rows = [10, 20].map(amountCents => ({

@@ -26,22 +26,23 @@ export default async function handler(req, res) {
     const records = rows.map(fromServer).filter(r => recordSchema.safeParse(r).success);
     const context = buildContext(records, parsed.data.question);
     const history = conversationContext(parsed.data.history, store.ownerId, records, process.env.GROQ_API_KEY);
-    const payload = { model: process.env.GROQ_MODEL, temperature: 0.65, max_completion_tokens: 600,
+    const completionTokens = 2048;
+    const payload = { model: process.env.GROQ_MODEL, temperature: 0.65, max_completion_tokens: completionTokens,
       ...(process.env.GROQ_MODEL.startsWith('openai/gpt-oss-') ? { reasoning_effort: 'low', include_reasoning: false } : {}),
       response_format: { type: 'json_object' }, messages: [{ role: 'system', content: systemPrompt },
         ...history,
         { role: 'user', content: JSON.stringify({ question: parsed.data.question, permittedContext: context }) }] };
     // Byte count is a deliberately conservative token upper bound for the complete request.
-    let reservedTokens = Buffer.byteLength(JSON.stringify(payload.messages), 'utf8') + 600;
+    let reservedTokens = Buffer.byteLength(JSON.stringify(payload.messages), 'utf8') + completionTokens;
     while (reservedTokens > 7500 && payload.messages.length > 2) {
       payload.messages.splice(1, 2); // Drop the oldest complete turn first.
-      reservedTokens = Buffer.byteLength(JSON.stringify(payload.messages), 'utf8') + 600;
+      reservedTokens = Buffer.byteLength(JSON.stringify(payload.messages), 'utf8') + completionTokens;
     }
     while (reservedTokens > 7500 && context.records.length) {
       context.records.pop(); context.coverage.selectedCount = context.records.length;
       context.coverage.incomplete = true;
       payload.messages.at(-1).content = JSON.stringify({ question: parsed.data.question, permittedContext: context });
-      reservedTokens = Buffer.byteLength(JSON.stringify(payload.messages), 'utf8') + 600;
+      reservedTokens = Buffer.byteLength(JSON.stringify(payload.messages), 'utf8') + completionTokens;
     }
     if (reservedTokens > 7500) throw new HttpError(422, 'This question needs a smaller set of entries. Please ask a more focused question.');
     const limits = {
@@ -77,6 +78,7 @@ export default async function handler(req, res) {
     const raw = await response.json();
     usedTokens = reportedTokenUsage(raw);
     // Provider usage counts even if later output checks fail.
+    if (raw.choices?.[0]?.finish_reason === 'length') throw new HttpError(502, 'Finn’s reply was cut short. Your question is still here; please retry.');
     let output;
     try { output = JSON.parse(raw.choices?.[0]?.message?.content); } catch { throw new HttpError(502, 'Finn could not finish a clear answer. Please retry.'); }
     const result = validateFinnOutput(output, context, records);
