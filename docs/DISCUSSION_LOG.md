@@ -228,3 +228,11 @@ Added IMPLEMENTATION_STATUS.md with document-to-code mapping and SETUP.md with l
 **Correction:** Registered the exact `http://127.0.0.1:5174` origin in Neon Auth on the production branch. The dev command now selects port 5174 explicitly and uses strict port handling, so an occupied port produces a clear startup error instead of silently choosing another unregistered origin. Other previously registered origins remain available. No wildcard origins were introduced.
 
 **Validation:** A fresh browser check on port 5174 passed signup, setup, synchronization, sign-out and sign-in. The disposable test account was removed. Browser-test defaults now use the same port.
+
+## October 11, 2026 — Vercel production accounts and nested-route 404
+
+**User action:** Deployed Daymargin to Vercel, then added the seven prepared Neon environment settings and redeployed. The production origin was registered on Neon Auth. The user reported HTTP 404 during signup and sign-in.
+
+**Diagnosis:** The live session endpoint returned 200, confirming the production Auth configuration was present. An empty sign-in request to `/api/auth/sign-in/email` returned Vercel's own `NOT_FOUND`, before reaching Neon. Local middleware had accepted nested paths, concealing the deployed filename-routing difference.
+
+**Correction:** Moved the Auth function to `api/auth.js` and added an explicit wildcard rewrite. The proxy handles original and rewritten request URLs, preserves query/cookie behavior, and rejects invalid forwarded paths. Twelve regression cases were added. The updated production route is validated following deployment.

@@ -7,7 +7,7 @@ export function localApi(environment) {
       applyLocalEnvironment(environment);
       server.middlewares.use(async (req, res, next) => {
         const path = new URL(req.url, 'http://localhost').pathname;
-        const name = path.startsWith('/api/auth/') ? 'auth/[...path]' : ({ '/api/records': 'records', '/api/push': 'push', '/api/finn': 'finn', '/api/apply': 'apply', '/api/account': 'account' })[path];
+        const name = path === '/api/auth' || path.startsWith('/api/auth/') ? 'auth' : ({ '/api/records': 'records', '/api/push': 'push', '/api/finn': 'finn', '/api/apply': 'apply', '/api/account': 'account' })[path];
         if (!name) return next();
         res.status = code => { res.statusCode = code; return res; };
         res.json = body => { res.setHeader('Content-Type', 'application/json'); res.end(JSON.stringify(body)); };

@@ -57,4 +57,6 @@ Proposals are private, expire in ten minutes, and require exact-preview confirma
 
 When importing `ArguellesMomon/DayMargin` into Vercel, use the repository root (the app is at the root), `npm run build`, and `dist` output. The existing local workspace folder is named `finn-daily`. Configure public Auth and server variables in the intended environments. Public changes require rebuilding. `/api` handlers run as Node functions. Register deployed origins in Neon Auth before login.
 
+The production domain `https://daymargin.vercel.app` is registered on Neon Auth. The auth handler is the flat `api/auth.js` function, with an explicit `/api/auth/:path*` rewrite in `vercel.json`. This is required for nested requests such as `/api/auth/sign-up/email` and `/api/auth/sign-in/email`; a Next.js-style `[...path].js` file alone did not match those nested paths in this Vite deployment. The handler accepts original or rewritten URLs, removes the internal routing parameter, and preserves Auth cookies and recovery query parameters.
+
 Native permission and device subscription registration are implemented; registration uses `/api/push` when `VITE_VAPID_PUBLIC_KEY` is set. Scheduled Web Push dispatch/private key, deduplication/cancellation and real Android/iPhone delivery remain unfinished. Permission alone does not schedule notifications.
