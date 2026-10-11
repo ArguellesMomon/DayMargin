@@ -1,0 +1,80 @@
+# Daymargin — Implementation status
+
+Started October 11, 2026, Asia/Manila, after the user explicitly requested coding and instructed the assistant to refer to, reflect on, analyze, and study every existing Markdown file. The first milestone was local; the subsequent Neon connection below now uses the selected production database. Website hosting remains local until Vercel deployment.
+
+
+## Current connection — October 11, 2026
+
+The user requested the existing Neon project and explicitly authorized connecting Daymargin. This supersedes Supabase for accounts and the database. The app folder has its own production link, Auth-enabled neon.ts, and ignored server environment. The parent Personal folder remains linked to its original production branch too.
+
+**Live:** Neon Auth and the versioned daymargin schema on project morning-bonus-42298277, production branch br-green-term-b4ns81ay. Sign-up, sign-in, name setup, cookie-backed sessions, record saving and full account-owned refresh are connected. All five entry types share the same validated endpoint. IndexedDB queues, operation receipts, expected versions, conflicts and tombstones preserve offline behavior. The development/production-preview servers run the Vercel API handlers locally.
+
+**Ownership:** Server-verified EdDSA JWTs check issuer, audience, expiry and current identity. Each query uses a transaction-scoped restricted role and account context; all five owned tables have row policies. Browser builds were checked against configured database/management secrets and contain none. A project-scoped server management key supports password-confirmed own-account deletion. Client-supplied user/project/branch IDs are never accepted. Deletion cascades records, operation receipts, requests, proposals and subscriptions.
+
+**Checks:** 23 logic/storage/database tests passed, including five new Neon migration tests. The actual migration was tested on a temporary branch before applying to production. A real connected Edge flow passed signup, setup, initial sync, second-session sign-in/retrieval, account isolation, offline queued changes, conflicting edits, explicit cloud-version resolution, sign-out/re-login, account deletion and rejection of the deleted identity. A separate production-PWA flow on the production database passed signed-in offline reload, offline note capture/reload, reconnect sync, incorrect-password deletion denial and correct-password deletion. Disposable example.test accounts were removed by the verified deletion flow; the temporary branch is cleaned up separately.
+
+**SDK compatibility:** The installed Neon SDK caches /token as /get-session, so the app fetches the documented token endpoint through the same-origin session cookie. The managed /delete-user endpoint returned 404; deletion uses Neon's supported branch management API after current-password verification. Auth required registering exact 127.0.0.1 origins. These were actual integration findings, not assumptions.
+
+**Remaining:** Groq credentials/model/free/ZDR validation; scheduled push dispatch/private key/deduplication; production email delivery/recovery verification; Vercel hosting and deployed Auth origins; real Android/iPhone testing; independent Finn animation states and the previously documented chat/schedule improvements. Finn/apply endpoints now use Neon, but real model responses remain untested without Groq configuration. No paid AI service was enabled.
+
+**Current local address:** `http://127.0.0.1:5174`. The exact origin is now registered on production following the user's invalid-origin report. The dev command and browser-test defaults use this port; strict port handling prevents silently switching to an unregistered address. A fresh real signup/setup/sync/sign-out/sign-in check passed there, and its disposable identity was removed.
+
+**Signup 404 correction:** The older development process on port 5173 kept the temporary branch's server settings after `.env.local` changed to production. Vite prioritizes existing process variables, so values injected by the local API plugin overrode the revised file. After that temporary branch was deleted, the upstream returned `404 endpoint not found`. Local environment loading now restores the pre-injection environment before reloading configuration and injects only supported server variables. Existing shell overrides are preserved. Both local servers were restarted with production settings. A regression test covers switching Auth/database together and removing obsolete file values; all 24 automated checks and the production build pass. Fresh browser checks on both ports 5173 and 5198 passed real signup, setup, synchronization, sign-out and sign-in. Disposable accounts were deleted after checking.
+
+The following first-milestone notes retain the earlier implementation context where relevant; this section and SETUP.md describe the current backend.
+## Specification mapping
+
+All seven original Markdown files were read before implementation. Later entries supersede historical proposals; the discussion log preserves history.
+
+| Source | Implementation response |
+| --- | --- |
+| README.md | React JS, mobile-first layout, clear preview status, documentation retained in the same project folder. |
+| PRODUCT_BRIEF.md | Tasks/reminders/notes/expenses/calendar; Today/Calendar/Library/Finn; PHP centavos; Asia/Manila dates; English authored copy; no emojis; account-scoped records and confirmation-only AI writes. |
+| SCREEN_CONCEPTS.md | Welcome/accounts/setup; agenda/date selection; search/type/tag filters; expense periods/categories; quick capture; drafts; shared details/editor; Finn questions/source links/proposal review; appearance/context/data settings. |
+| BRAND_BRIEF.md | Daymargin wordmark, notebook margin marks, warm paper/graphite, muted forest green, local Manrope fonts, Lucide outline icons, restrained mascot placement. |
+| DISCUSSION_LOG.md | Later approved/delegated decisions take precedence: four destinations, English-only, Vercel/Supabase, no paid AI fallback. Sample data exists only in the explicit development preview. |
+| TECHNICAL_PLAN.md | IndexedDB account caches and queued operations; idempotent versioned SQL writes; conflicts/tombstones; authenticated Vercel API; user-triggered permission/subscription flow; no claim that permission alone schedules delivery. |
+| assets/finn/finn-master-v1.prompt.md | Original master PNG used in the interface, rather than replacing Finn with a generic symbol. Still artwork remains distinguished from final animation assets. |
+
+## Working locally
+
+- Responsive React app with desktop sidebar and four labeled mobile destinations.
+- Real create/edit/delete flows for five entry types, task completion/undo, pinned entries, optional tags and per-record exclusion from Finn.
+- Persisted IndexedDB records, drafts including unfinished amount/tag text, conversations, and appearance preferences. Draft persistence begins immediately and survives navigation.
+- Today schedule, due/overdue work, standalone/attached reminders, recent notes, and recorded spending.
+- Agenda calendar with week selection and native date picker; daily/weekly/monthly repeat projection, short-month last-day handling, occurrence/series editing, cancellation exceptions, and overlap labels.
+- Library search and type/tag filters. Manual PHP expense logging, exact integer-centavo totals, period selection, custom dates, and category filtering.
+- Light/dark/device appearance, reduced motion, export, explicitly confirmed preview clearing, and native notification permission explanation/action.
+- Original Finn drawing, portrait header crop through CSS, thinking tilt, starter questions, composer, cached conversation, source links, and exact proposed-field review. AI unavailability preserves the question; there is no pretend AI response in preview.
+- Production PWA manifest, installation icons, precached application shell/fonts/mascot, offline navigation, and service-worker push/click handlers. API responses and private records are not put into an HTTP cache.
+
+## First-milestone integration code (superseded by Neon above)
+
+- Supabase email/password signup/sign-in/recovery/setup, user metadata, account-scoped cache, sync queue, conflict choices, and local sign-out cache clearing with export protection for pending changes/drafts.
+- SQL migration with row-level access controls, server-side field validation, expected-version checks, idempotent operation results, deletion markers, private AI proposals, atomic shared/user request and token reservations, and owned push subscriptions.
+- Vercel `/api/finn`: validate session, retrieve owned current allowed records, calculate spending in code, limit context, call only configured Groq, validate sources/proposals, and reject an answer if its source records changed while being generated. Past chat text is not sent as future context.
+- Vercel `/api/apply`: accept a stored proposal ID after explicit UI confirmation, recheck ownership/current version/context access, use an idempotent save, and require a fresh proposal on stale data. Repeating-series AI edits are deferred to manual editing in this first build.
+- Vercel `/api/account`: authenticated, explicitly confirmed account deletion with cloud records removed by ownership cascades.
+- Device subscription registration when public VAPID configuration, an active service worker, and an account are present.
+
+These paths have not been tested against the user's Supabase/Groq accounts because credentials are not configured. The migration has been executed and tested in an embedded PostgreSQL environment; that is distinct from a real Supabase deployment.
+
+## Checks completed
+
+- Production build including the generated service worker.
+- 18 automated logic/storage/database tests: Manila date boundaries, centavo calculations and explicit/prior-week spending ranges, date/time validation, recurrence/overlaps, exclusions/source/proposal validation, account cache isolation, queued versions, tombstones, actual SQL migration, other-account access denial, idempotency/conflicts, invalid values, and private shared quota reservations.
+- Four browser scenarios in headless Microsoft Edge: capture/edit/delete/undo/reload; expense totals; draft restoration/theme/reduced-motion/Finn-unavailable input retention; no horizontal overflow or runtime errors across main pages at 360, 390, 768, and 1440 pixels.
+- A separate production-PWA browser scenario: install service worker, disconnect, reload the app, create a note offline, and reload its saved content.
+- Visual inspection of mobile Today, desktop Today, and dark mobile Finn screenshots; adjusted the portrait crop and compact chat starter layout after inspection.
+
+## Remaining before production
+
+1. Neon account/database connection is complete and live flows are verified above. Complete production SMTP/recovery delivery, Vercel environment/deployed origins, and real-device account checks.
+2. Select/test the actual Groq Free production model, verify actual request/token limits and Zero Data Retention, and enable the explicit free/ZDR configuration flags. No API payment method or paid fallback is part of this plan. The model still needs evaluation; a prompt is not a guarantee of error-free answers.
+3. Implement and deploy the replacement scheduled server reminder dispatcher after the Neon change with occurrence/device deduplication, cancellation, retry handling, and expired subscriptions. Closed-app scheduled delivery is not implemented in this milestone.
+4. Validate Android and iPhone/Home Screen installation, notification permission and delivery, mobile keyboards, accessibility, and offline/cloud transitions on actual devices. Desktop Edge tests do not establish these behaviors.
+5. Produce consistent blink/nod/glasses-adjustment assets if retained. The current motion transforms the still drawing; it does not provide independent facial animation states.
+6. Broaden Finn's date-range interpretation, computed schedule-gap support, conversation management, and action evaluation. Spending calculations support today/week/month, yesterday/last week/last month, and explicit YYYY-MM-DD ranges, including Library's custom-range transfer. Other ambiguous/historical ranges must be treated as unsupported rather than answered from a wrong range. Longer libraries receive bounded context with incomplete-coverage reporting.
+7. Complete production policy copy and service-specific operational retention/maintenance. Export currently uses JSON; importing a backup is outside this milestone.
+
+The initial milestone provisioned no services. The connection milestone uses the user-selected Neon project and server-only ignored credentials; no paid plan was enabled or website deployed.

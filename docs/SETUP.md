@@ -1,0 +1,60 @@
+# Daymargin — Running the Neon-connected app
+
+## Local use
+
+Run `npm install` and `npm run dev` inside `finn-daily` with Node.js 22.12 or newer. The development server runs the React app and its API handlers. With Neon configured, Get started creates a real account and Sign in loads synchronized records. Open development preview uses separate editable sample entries and never writes to Neon. Production accounts start empty.
+
+The default development address is `http://127.0.0.1:5174`. That exact origin is registered on the production Auth branch. The dev command uses a fixed port and stops with a clear error if it is occupied, instead of silently moving to an unregistered port. Stop an existing development server before starting another. If you deliberately choose another port, register that exact origin first.
+
+The app folder has its own ignored `.neon` link; the parent Personal folder's setup is separate. Run app commands inside `finn-daily`.
+
+The local API reloads branch settings when Vite reloads `.env.local`, without retaining its previously injected connection values. Explicit environment variables set before starting the server keep Vite's normal precedence. After switching branches, use the current server address and reload the page; a removed branch's Auth endpoint returns 404. Servers started before this correction require one full restart.
+
+## Neon configuration
+
+Project: `morning-bonus-42298277` (Finn-daily). Final branch: `production`. App `neon.ts` declares `{ auth: true }`. No Neon AI Gateway, Object Storage, or Functions are enabled.
+
+For a new local checkout:
+
+1. Install the Neon CLI and sign in. Run `neon link --project-id morning-bonus-42298277 --branch production -y` from the app folder.
+2. Run `neon deploy` to reconcile Auth and pull the branch environment into ignored `.env.local`.
+3. Run `node scripts/configure-neon-env.mjs` to set the public `VITE_NEON_AUTH_URL` alias.
+4. Run `npm run db:migrate` to apply versioned SQL migrations. The script requires direct `DATABASE_URL_UNPOOLED`, tracks checksums, and runs transactionally. Test new migrations on a temporary branch first; create a new file rather than editing an applied migration.
+
+Neon manages `neon_auth`; app tables live in `daymargin`. The older Supabase migration is a legacy test fixture and must not be applied to Neon.
+
+Server variables: pooled `DATABASE_URL`, `NEON_AUTH_BASE_URL`, `NEON_AUTH_JWKS_URL`. The direct `DATABASE_URL_UNPOOLED` is for migrations. Account deletion also requires server-only `PRIVATE_NEON_API_KEY` scoped to this project, `NEON_PROJECT_ID`, and `NEON_BRANCH_ID`; the endpoint never accepts caller-selected IDs and rechecks the current password. Create that key with `neon api-keys create --name daymargin-account-deletion --project-id morning-bonus-42298277 -o json` and save it privately. Do not put it in the browser or commit it. The managed `/delete-user` endpoint returned 404 during testing, so deletion uses the supported branch management API. The browser receives only `VITE_NEON_AUTH_URL`, never database credentials or CLI keys. `.env.local` and `.neon` are excluded from Git.
+
+Register each actual app origin, including its scheme/port: `neon neon-auth domain add http://127.0.0.1:5174`. Auth's localhost allowance does not substitute for the tested exact 127.0.0.1 origin. Register Vercel production and intended preview origins too.
+
+The same-origin `/api/auth/*` proxy puts account cookies on the app host, supporting browsers that block third-party cookies. API requests retrieve a JWT and verify signature, issuer, audience, expiry and live identity existence. Queries switch to a restricted transaction-scoped database role. Ownership is enforced in queries and row policies. The installed SDK has a `/token` response-cache issue; the app fetches that documented endpoint directly through its session cookie.
+
+Email/password registration, login, setup and password-confirmed deletion use Managed Better Auth. Production email delivery and verification require validating SMTP and verification settings; see [Neon's production checklist](https://neon.com/docs/auth/production-checklist). Recovery email delivery remains unverified until an actual message is received and its flow completed.
+
+## Offline synchronization
+
+Account-scoped IndexedDB holds entries, drafts, chats and queued changes. Each change keeps an operation ID and expected version. Reconnect accepts each valid operation once or presents an explicit conflict. Deletions remain tombstones; keeping a conflicting locally edited deleted record creates a new record only after confirmation.
+
+Record refresh uses cursor-based pages including tombstones. It runs every 45 seconds and on reconnect/focus; it is a full refresh, without a live subscription or incremental feed. Drafts/chats stay device-local. Sign-out surfaces unsynced work and clears that account's local cache. The built PWA supports offline reload; the development server itself cannot serve disconnected page loads.
+
+## Validation
+
+Run `npm test`, `npm run build`, and, with the dev server running, `npm run test:e2e`. Browser tests use installed Microsoft Edge. `DAYMARGIN_TEST_URL` selects another port.
+
+Connected testing is opt-in with `DAYMARGIN_CONNECTED_TESTS=true`. Run `tests/browser/connected.spec.js` against a temporary Neon branch. It creates disposable `@example.test` accounts and tests signup/sign-in, separate-device retrieval, account isolation, offline queues, conflicts, sign-out and deletion. Password-bearing traces/screenshots are disabled.
+
+For the offline production-PWA scenario, build, run `npm run preview -- --port 4173`, set `DAYMARGIN_TEST_URL=http://127.0.0.1:4173`, and run the offline browser check. Install the shell before disconnecting. A configured Neon build also needs `DAYMARGIN_CONNECTED_TESTS=true`; the scenario creates and deletes a disposable account and validates reconnection.
+
+## Finn
+
+Finn now reads current permitted records from Neon. Real answers still require server-only `GROQ_API_KEY`, `GROQ_MODEL`, an actual Groq Free account and verified Zero Data Retention. Set `GROQ_FREE_CONFIRMED=true` and `GROQ_ZDR_CONFIRMED=true` only after checking those settings. These flags are operator acknowledgments, not remote account checks. Never paste keys into chat or tracked files. No paid fallback exists.
+
+Caps remain 10/user/day, 80/shared/day, 2/shared/minute, one active request, and conservative token reservations of 6,000/minute and 150,000/day. Failed requests count. Lower these if the real provider allowance is tighter. Questions survive errors; core organizer screens remain usable.
+
+Proposals are private, expire in ten minutes, and require exact-preview confirmation. Applying rechecks ownership, exclusions, deletion and version. Repeating-series AI edits remain manual in this build.
+
+## Vercel and notifications
+
+When importing `ArguellesMomon/DayMargin` into Vercel, use the repository root (the app is at the root), `npm run build`, and `dist` output. The existing local workspace folder is named `finn-daily`. Configure public Auth and server variables in the intended environments. Public changes require rebuilding. `/api` handlers run as Node functions. Register deployed origins in Neon Auth before login.
+
+Native permission and device subscription registration are implemented; registration uses `/api/push` when `VITE_VAPID_PUBLIC_KEY` is set. Scheduled Web Push dispatch/private key, deduplication/cancellation and real Android/iPhone delivery remain unfinished. Permission alone does not schedule notifications.
