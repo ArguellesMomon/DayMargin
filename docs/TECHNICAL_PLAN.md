@@ -60,6 +60,7 @@ Before choosing the final model, test concise English answers, source grounding,
 - If permission is already granted, show the current status rather than requesting it again. If denied, explain how to change it in the browser/device settings. Do not repeatedly interrupt users.
 - After permission is granted, register/confirm the service worker and push subscription, then securely associate that subscription with the signed-in account and device. Permission alone does not complete delivery setup.
 - Show permission and subscription/setup status in Settings. If subscription setup fails, preserve the reminder and provide Retry.
+- Unsupported/blocked setup remains actionable and explains how to open a supported direct browser or install the iPhone/iPad Home Screen app; it must not silently disable the only control. Refresh permission when users return from device/browser settings. A user-triggered, generic test notification can verify the app-scoped service-worker display path after permission is granted, independently of VAPID/server scheduling.
 
 The permission request should follow a user interaction and run in a secure context. See [MDN requestPermission](https://developer.mozilla.org/en-US/docs/Web/API/Notification/requestPermission_static). [Web Push](https://developer.mozilla.org/en-US/docs/Web/API/Push_API) uses a service worker and a push subscription to handle server messages, including when the page is not loaded.
 

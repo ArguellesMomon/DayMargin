@@ -2,6 +2,14 @@
 
 Started October 11, 2026, Asia/Manila, after the user explicitly requested coding and instructed the assistant to refer to, reflect on, analyze, and study every existing Markdown file. The first milestone was local; the subsequent Neon connection below now uses the selected production database. The user has deployed the website at https://daymargin.vercel.app.
 
+## Notification setup correction — October 11, 2026
+
+The user reported that Enable notifications did nothing on desktop/mobile and displayed “Unavailable in this browser.” The previous UI disabled that control when Notification/service-worker APIs were absent, leaving no actionable setup path. A standard isolated desktop Edge probe on the deployed HTTPS origin exposed both APIs; the user's exact browser or embedded-view restriction is not established.
+
+Settings now keeps Notification setup usable for unsupported/blocked states and explains HTTPS, direct-tab, supported-browser, or iPhone/iPad Home Screen requirements. Native permission requests remain tied to the explicit confirmation click, with visible waiting/error/dismissal feedback. Returning from browser/device settings refreshes permission. Granted users can send a generic private test notification through the app-scoped service worker; activation has a bounded wait.
+
+Validation: 46 automated logic/storage/database/proxy/notification checks and the production build passed. Five isolated Edge browser scenarios passed for unsupported setup, explicit native-request invocation with a simulated response, blocked permission/status refresh, simulated iPhone installation guidance, and actual service-worker test notification issuance/read-back in a disposable profile. These checks do not establish Android/iPhone delivery or visibility in the user's OS notification center. Automatic scheduled delivery, VAPID production configuration and the replacement server dispatcher remain unfinished.
+
 
 ## Current connection — October 11, 2026
 

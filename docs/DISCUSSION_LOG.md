@@ -238,3 +238,13 @@ Added IMPLEMENTATION_STATUS.md with document-to-code mapping and SETUP.md with l
 **Correction:** Moved the Auth function to `api/auth.js` and added an explicit wildcard rewrite. The proxy handles original and rewritten request URLs, preserves query/cookie behavior, and rejects invalid forwarded paths. Twelve regression cases were added. The updated production route is validated following deployment.
 
 **Live validation:** All 36 automated checks and the production build passed. Vercel's GitHub deployment status reported success for fix commit `fe9e338`. On the live HTTPS domain, real signup, session retrieval, setup/name update, JWT issuance, cloud note saving/retrieval, sign-out, sign-in and restored-note retrieval all passed. The disposable account and its test note were removed through the deployed password-confirmed deletion endpoint. Accounts and cloud records now work on the production website; Finn's provider and scheduled push remain separate unfinished integrations.
+
+## October 11, 2026 — Notification setup dead end
+
+**User report:** Enable notifications did nothing on the Vercel website on desktop and mobile, with text resembling “Unavailable in this browser.”
+
+**Finding:** The previous control was disabled when the browser did not expose Notification/service-worker APIs. The deployed site exposes these APIs in an isolated standard desktop Edge browser; the user's precise browser restriction is still unknown. The app must explain a usable next step rather than leave a disabled button.
+
+**Correction:** Actionable setup help for unsupported/blocked browsers, iPhone/iPad Home Screen instructions, direct-tab/HTTPS guidance, permission refresh on returning to the app, visible request feedback, scoped service-worker readiness and a user-triggered private test notification. The native prompt remains a browser-controlled request after an explicit user action. No automatic scheduled push system was added or claimed.
+
+**Validation:** 46 automated checks, the production build, and five isolated browser scenarios passed, including an actual service-worker test notification with permission granted only in a disposable test profile. Real mobile permission/display and scheduled closed-app delivery remain to validate/implement.
