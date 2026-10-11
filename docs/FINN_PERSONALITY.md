@@ -26,6 +26,8 @@ Example direction, not hardcoded responses:
 
 The actual built-in prompt lives in `server/finn.js`, rather than being supplied by the browser. It includes fictional dialogue examples to demonstrate Finn's voice; these never establish facts about the user. Finn can answer greetings, random thoughts, jokes, interests, and ordinary general questions without requiring any saved entries. He does not claim to browse or know live information. Casual answers have no record sources or automatic action proposals.
 
+Recorded-spending questions use a focused version of the same friendly voice, selected on the server. It retains natural “bro”/“dude” and shared grounding/action rules, while omitting fictional social examples and character quirks. This addresses live testing where Food-category entries were embellished as snacks; financial summaries should give exact recorded totals/ranges/counts/categories and an optional friendly follow-up, with no unsolicited spending judgment.
+
 The user authorized reading Intern-app's `api/chat.js` and `src/components/AiChatbot.jsx`. Pip's server-owned identity, recent-message context, and low reasoning setting informed this implementation. Intern-app was used as reference only: its medical specialization, Taglish, Supabase backend, and visual interface were not copied into Daymargin.
 
 ## Follow-up context and privacy

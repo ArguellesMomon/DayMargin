@@ -2,7 +2,7 @@ import { buildContext } from '../src/lib/finn-context.js';
 import { fromServer } from '../src/lib/storage.js';
 import { recordSchema, occursOn } from '../src/lib/domain.js';
 import { authenticated, fail, HttpError, parseBody, reply, requireMethod } from '../server/http.js';
-import { conversationContext, conversationMemory, questionSchema, reportedTokenUsage, systemPrompt, validateFinnOutput } from '../server/finn.js';
+import { conversationContext, conversationMemory, promptForQuestion, questionSchema, reportedTokenUsage, validateFinnOutput } from '../server/finn.js';
 
 export default async function handler(req, res) {
   let store, reservation, usedTokens = null;
@@ -29,7 +29,7 @@ export default async function handler(req, res) {
     const completionTokens = 2048;
     const payload = { model: process.env.GROQ_MODEL, temperature: 0.65, max_completion_tokens: completionTokens,
       ...(process.env.GROQ_MODEL.startsWith('openai/gpt-oss-') ? { reasoning_effort: 'low', include_reasoning: false } : {}),
-      response_format: { type: 'json_object' }, messages: [{ role: 'system', content: systemPrompt },
+      response_format: { type: 'json_object' }, messages: [{ role: 'system', content: promptForQuestion(parsed.data.question) },
         ...history,
         { role: 'user', content: JSON.stringify({ question: parsed.data.question, permittedContext: context }) }] };
     // Byte count is a deliberately conservative token upper bound for the complete request.

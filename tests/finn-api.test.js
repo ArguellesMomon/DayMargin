@@ -85,6 +85,19 @@ test('the richer built-in personality still accepts a maximum-length question', 
   await handler({ method: 'POST', headers: {}, body: { question: 'x'.repeat(1000) } }, res);
   expect(res.statusCode).toBe(200); expect(fetchMock).toHaveBeenCalledOnce();
 });
+test('expense questions retain Finn voice and computed context without fictional character examples', async () => {
+  const rows = [10, 20].map(amountCents => ({ id: crypto.randomUUID(), version: 1, deleted: false,
+    created_at: new Date(), updated_at: new Date(), data: recordSchema.parse({ type: 'expense', date: today(), category: 'Food', amountCents }) }));
+  mocks.store.list.mockResolvedValue(rows); mocks.store.get.mockResolvedValue(rows);
+  const res = response();
+  await handler({ method: 'POST', headers: {}, body: { question: 'How much did I spend today?' } }, res);
+  expect(res.statusCode).toBe(200);
+  const payload = JSON.parse(fetchMock.mock.calls[0][1].body);
+  expect(payload.messages[0].content).toContain('warm, relaxed bro');
+  expect(payload.messages[0].content).not.toContain('Voice examples');
+  expect(payload.messages[0].content).not.toContain('snack breaks');
+  expect(JSON.parse(payload.messages.at(-1).content).permittedContext.calculatedSpending.totalCents).toBe(30);
+});
 test('preserves accounting and identifies a provider reply cut short by its token limit', async () => {
   fetchMock.mockResolvedValue(new Response(JSON.stringify({ choices: [{ finish_reason: 'length', message: { content: '{"answer":"' } }], usage: { prompt_tokens: 800, completion_tokens: 2048, total_tokens: 2848 } })));
   const res = await ask();
