@@ -1,8 +1,8 @@
 # Daymargin — Technical implementation plan
 
-Updated October 11, 2026, Asia/Manila. Product architecture with a connected Neon implementation; Vercel hosting, Groq setup, and scheduled delivery remain outstanding.
+Updated October 11, 2026, Asia/Manila. The Neon-backed app and Groq chat are connected on Vercel. Scheduled notification delivery remains outstanding.
 
-**Connection milestone:** The initial organizer now uses Neon Auth and server-authenticated Neon Postgres endpoints. The user authorized this change after requesting setup of their existing Neon project. Versioned migration files, restricted-role row policies, idempotent saves, conflicts, tombstones, and account-deletion cascades replace the unconfigured Supabase backend. Groq credentials and scheduled push delivery remain outstanding. See [Implementation status](IMPLEMENTATION_STATUS.md) and [Setup](SETUP.md) for precise coverage and connection instructions.
+**Connection milestone:** The organizer uses Neon Auth and server-authenticated Neon Postgres endpoints. The user authorized this change after requesting their existing Neon project. Versioned migrations, restricted-role row policies, idempotent saves, conflicts, tombstones, and deletion cascades replace the unconfigured Supabase backend. The user configured Groq and ZDR in Vercel; live computed-total and source-citation checks have passed. Scheduled push delivery remains outstanding. See [Implementation status](IMPLEMENTATION_STATUS.md) and [Setup](SETUP.md).
 
 ## 1. Selected stack
 

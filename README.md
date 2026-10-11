@@ -8,7 +8,7 @@ The [DayMargin GitHub repository](https://github.com/ArguellesMomon/DayMargin) c
 
 ## Current stage
 
-React/Vite PWA with Neon Auth, server-authenticated Neon Postgres saving, offline record queues, conflict review, themes, and Finn's interface. The user authorized replacing the unconfigured Supabase backend with Neon on October 11, 2026. [Production Daymargin](https://daymargin.vercel.app) is hosted on Vercel, with verified signup, sign-in and cloud saving. Live checks and connection details are recorded in Implementation status. Finn's Groq credentials and scheduled notification delivery remain separate integrations.
+React/Vite PWA with Neon Auth, server-authenticated Neon Postgres saving, offline record queues, conflict review, themes, and Groq-backed Finn chat. The user authorized replacing the unconfigured Supabase backend with Neon on October 11, 2026. [Production Daymargin](https://daymargin.vercel.app) is hosted on Vercel, with verified signup, sign-in, cloud saving and live AI replies. Checks and connection details are recorded in Implementation status. Scheduled notification delivery remains unfinished.
 
 See [Implementation status](docs/IMPLEMENTATION_STATUS.md) for the specification mapping, completed checks, and remaining work. See [Setup](docs/SETUP.md) to run locally and connect the selected services.
 
@@ -45,10 +45,10 @@ As of October 11, 2026:
 - Design: four main destinations, warm paper/graphite themes, muted green, Manrope typography, light organization through tags and pins.
 
 - Hosting/backend: Vercel and Neon. The user requested Neon setup and subsequently authorized connecting Daymargin to it, superseding the earlier Supabase choice.
-- AI: zero-payment, lightweight everyday chat through an authenticated server endpoint. Groq Free is the recommended provider; the model and account limits need validation before integration. No paid fallback.
+- AI: zero-payment, lightweight everyday chat through an authenticated server endpoint connected to Groq Free. Casual messages and recent follow-ups are supported; provider limits still apply. No paid fallback.
 - Notifications: a user-triggered native browser permission pop-up, backed by a scheduled Web Push delivery design.
 
-Screen concepts and a technical plan are documented. Finn's first transparent master drawing is integrated. Thinking uses a small CSS tilt with a still reduced-motion alternative; distinct blink/nod artwork, Groq setup and scheduled delivery remain to complete and validate.
+Screen concepts and a technical plan are documented. Finn's first transparent master drawing is integrated. Thinking uses a small CSS tilt with a still reduced-motion alternative; distinct blink/nod artwork and scheduled notification delivery remain to complete and validate.
 
 ## Documentation
 
