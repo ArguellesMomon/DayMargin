@@ -5,13 +5,14 @@ import { useDaymargin } from '../context.jsx';
 import { BackLink, Dialog, TYPE_META } from '../components/UI.jsx';
 import { blankRecord, CATEGORIES, money, parseAmount, recordSchema, titleOf, today } from '../lib/domain.js';
 import { enableNotifications, notificationStatus } from '../lib/notifications.js';
+import { organizerReturnTo } from '../lib/navigation.js';
 
 export default function Editor() {
   const { data, notify } = useDaymargin();
   const { id, type: routeType } = useParams();
   const [search] = useSearchParams();
   const navigate = useNavigate();
-  const returnTo = useLocation().state?.returnTo;
+  const returnTo = organizerReturnTo(useLocation().state?.returnTo);
   const existing = id ? data.records.find(r => r.id === id && !r.deleted) : null;
   const type = existing?.type || routeType;
   const draftKey = id || `new-${type}`;
@@ -22,6 +23,7 @@ export default function Editor() {
   const [form, setForm] = useState(base);
   const [amount, setAmount] = useState(base.editorAmount ?? (base.amountCents ? (base.amountCents / 100).toFixed(2) : ''));
   const [tagText, setTagText] = useState(base.editorTags ?? base.tags.join(', '));
+  const [customCategory, setCustomCategory] = useState(!CATEGORIES.includes(base.category));
   const [errors, setErrors] = useState({});
   const [busy, setBusy] = useState(false);
   const [changed, setChanged] = useState(Boolean(data.drafts[draftKey]));
@@ -31,6 +33,7 @@ export default function Editor() {
   const [extrasOpen, setExtrasOpen] = useState(Boolean(base.reminderAt || base.tags.length || base.pinned || base.excluded));
   const noteRef = useRef(null);
   const savedRef = useRef(false);
+  const savedReturnTo = useRef(returnTo);
   useEffect(() => {
     if (!changed || savedRef.current) return;
     setDraftStatus('Saving draft…');
@@ -65,7 +68,7 @@ export default function Editor() {
       try { await data.draft(draftKey, { ...form, editorAmount: amount, editorTags: tagText, amountCents: parseAmount(amount), tags: tagText.split(',').map(t => t.trim()).filter(Boolean) }); }
       catch { return; }
     }
-    navigate(existing ? `/record/${id}${occurrenceDay ? `?day=${occurrenceDay}` : ''}` : '/library', { state: { returnTo } });
+    navigate(existing ? `/record/${id}${occurrenceDay ? `?day=${occurrenceDay}` : ''}` : returnTo, { state: { returnTo } });
   }
   async function submit(event) {
     event.preventDefault();
@@ -84,36 +87,42 @@ export default function Editor() {
       savedRef.current = true; setChanged(false);
       await data.clearDraft(draftKey);
       const saved = next.records.find(r => r.id === existing?.id) || next.records.at(-1);
+      let destination = returnTo;
+      if (returnTo.startsWith('/calendar') && ['event', 'reminder', 'task'].includes(type) && saved.date && (!existing || saved.date !== existing.date)) {
+        const query = new URLSearchParams(returnTo.split('?')[1]);
+        query.set('date', saved.date);
+        destination = `/calendar?${query}`;
+      }
+      savedReturnTo.current = destination;
       notify('Entry saved.');
       if ((type === 'reminder' || form.reminderAt) && notificationStatus() === 'default') { setForm(f => ({ ...f, id: saved.id })); setPermissionPrompt(true); }
-      else navigate(`/record/${saved.id}${scope === 'occurrence' ? `?day=${occurrenceDay}` : ''}`, { replace: true, state: { returnTo } });
+      else navigate(`/record/${saved.id}${scope === 'occurrence' ? `?day=${occurrenceDay}` : ''}`, { replace: true, state: { returnTo: destination } });
     } catch { setErrors({ form: 'This entry could not be saved. Your input is still here. Please retry.' }); }
     finally { setBusy(false); }
   }
-  const finishPermission = () => { setPermissionPrompt(false); navigate(`/record/${form.id}`, { replace: true, state: { returnTo } }); };
-  const TypeIcon = TYPE_META[type].icon;
+  const finishPermission = () => { setPermissionPrompt(false); navigate(`/record/${form.id}`, { replace: true, state: { returnTo: savedReturnTo.current } }); };
   return <div className={`dm-page editor-page ${type === 'note' ? 'note-editor' : ''}`}>
-    <button className="back-link" onClick={close}><ArrowLeft size={16} />{existing ? 'Back to entry' : 'Back to library'}</button>
-    <header className="editor-heading"><p className="eyebrow"><TypeIcon size={14} />{existing ? 'MAKE IT YOURS' : 'KEEP THE DETAIL'}</p><h1>{existing ? `Edit ${TYPE_META[type].label.toLowerCase()}` : `A new ${TYPE_META[type].label.toLowerCase()}.`}</h1><p className="muted">{type === 'expense' ? 'Only what you spent. Nothing more to fill out.' : TYPE_META[type].description + '.'}</p></header>
+    <button className="back-link" onClick={close}><ArrowLeft size={16} />{existing ? 'Back to entry' : returnTo.startsWith('/calendar') ? 'Back to calendar' : 'Back to library'}</button>
+    <header className="editor-heading"><h1>{existing ? `Edit ${TYPE_META[type].label.toLowerCase()}` : `New ${TYPE_META[type].label.toLowerCase()}`}</h1></header>
     {repeating && !scope && <Dialog title="Edit this repeating entry" onClose={close}><p>Choose what changes. Other occurrences keep their exceptions.</p><div className="dialog-actions"><button className="button subtle" onClick={() => selectScope('occurrence')}>This occurrence</button><button className="button primary" onClick={() => selectScope('series')}>The series</button></div></Dialog>}
     <form onSubmit={submit} noValidate className="entry-form">
       {scope === 'occurrence' && <p className="notice">Editing only {occurrenceDay}. The date and repeat rule stay with the series.</p>}
       {type === 'expense' && <label className="amount-field">Amount · PHP<div><span>₱</span><input aria-label="Amount in Philippine pesos" inputMode="decimal" placeholder="0.00" value={amount} onChange={e => { setAmount(e.target.value); setChanged(true); }} aria-invalid={Boolean(errors.amountCents)} /></div>{errors.amountCents && <small className="field-error">{errors.amountCents}</small>}</label>}
       {type !== 'expense' && textField('title', type === 'note' ? 'Title (optional)' : 'Title', { placeholder: type === 'note' ? 'Give the thought a name…' : 'What would you like to keep?', maxLength: 160, autoFocus: true })}
-      {type === 'note' && <div className="note-tools" aria-label="Note formatting"><button type="button" onClick={() => insertNote('# ')} aria-label="Insert heading"><Heading size={17} /></button><button type="button" onClick={() => insertNote('- ')} aria-label="Insert list item"><List size={17} /></button><button type="button" onClick={() => insertNote('- [ ] ')} aria-label="Insert checklist item"><ListChecks size={17} /></button><span>Plain text, kept simple</span></div>}
+      {type === 'note' && <div className="note-tools" aria-label="Note formatting"><button type="button" onClick={() => insertNote('# ')} aria-label="Insert heading"><Heading size={17} /></button><button type="button" onClick={() => insertNote('- ')} aria-label="Insert list item"><List size={17} /></button><button type="button" onClick={() => insertNote('- [ ] ')} aria-label="Insert checklist item"><ListChecks size={17} /></button></div>}
       {(type === 'note' || type === 'task' || type === 'event' || type === 'reminder') && <label>{type === 'note' ? 'Your note' : 'Details (optional)'}<textarea aria-label={type === 'note' ? 'Your note' : 'Details (optional)'} ref={noteRef} rows={type === 'note' ? 14 : 3} placeholder={type === 'note' ? 'Start with what’s on your mind…' : 'A little context, if it helps.'} value={form.body} onChange={e => field('body', e.target.value)} maxLength={20000} />{errors.body && <small className="field-error">{errors.body}</small>}</label>}
-      {type === 'expense' && <><div className="field-grid"><label>Category<input list="expense-categories" value={form.category} onChange={e => field('category', e.target.value)} maxLength={60} /><datalist id="expense-categories">{CATEGORIES.map(c => <option key={c} value={c} />)}</datalist>{errors.category && <small className="field-error">{errors.category}</small>}</label>{textField('date', 'Date', { type: 'date', required: true })}</div>{textField('title', 'Description (optional)', { placeholder: 'What was it for?', maxLength: 160 })}</>}
+      {type === 'expense' && <><div className="field-grid"><label>Category<select aria-label="Category" value={customCategory ? '__custom__' : form.category} aria-invalid={Boolean(errors.category)} onChange={event => { const custom = event.target.value === '__custom__'; setCustomCategory(custom); field('category', custom ? '' : event.target.value); }}>{CATEGORIES.map(category => <option key={category} value={category}>{category}</option>)}<option value="__custom__">Custom category</option></select>{!customCategory && errors.category && <small className="field-error">{errors.category}</small>}</label>{textField('date', 'Date', { type: 'date', required: true })}</div>{customCategory && textField('category', 'Custom category', { placeholder: 'Name your category', maxLength: 60, autoFocus: true })}{textField('title', 'Description (optional)', { placeholder: 'What was it for?', maxLength: 160 })}</>}
       {['event', 'reminder', 'task'].includes(type) && <div className="schedule-fields">{textField('date', type === 'task' ? 'Due date (optional)' : 'Date', { type: 'date', disabled: scope === 'occurrence' })}
         {type === 'event' && <label className="check-label"><input type="checkbox" checked={form.allDay} onChange={e => field('allDay', e.target.checked)} />All-day event</label>}
         {type === 'reminder' && textField('start', 'Reminder time · Asia/Manila', { type: 'time' })}
         {type === 'event' && !form.allDay && <div className="field-grid">{textField('start', 'Start time', { type: 'time' })}{textField('end', 'End time', { type: 'time' })}</div>}
         {type === 'event' && textField('location', 'Location (optional)', { placeholder: 'Where will it be?', maxLength: 200 })}
         <label>Repeat<select value={form.recurrence} onChange={e => field('recurrence', e.target.value)} disabled={scope === 'occurrence'}>{[['none', 'Does not repeat'], ['daily', 'Every day'], ['weekly', 'Every week'], ['monthly', 'Every month']].map(([v, l]) => <option key={v} value={v}>{l}</option>)}</select>{errors.recurrence && <small className="field-error">{errors.recurrence}</small>}</label>
-        {form.recurrence === 'monthly' && <p className="help-text">Repeats on this day of the month. Shorter months use their last day.</p>}<p className="help-text">All times use Asia/Manila. Task due dates do not reserve time.</p>
+        {form.recurrence === 'monthly' && <p className="help-text">Repeats on this day of the month. Shorter months use their last day.</p>}<p className="help-text">Times use Asia/Manila.</p>
       </div>}
-      {scope !== 'occurrence' && <details className="editor-extras" open={extrasOpen} onToggle={event => setExtrasOpen(event.currentTarget.open)}><summary>More options <span>Tags, privacy{type !== 'reminder' && type !== 'expense' ? ', reminders' : ''}</span></summary><div className="editor-extras-content">
+      {scope !== 'occurrence' && <details className="editor-extras" open={extrasOpen} onToggle={event => setExtrasOpen(event.currentTarget.open)}><summary>More options</summary><div className="editor-extras-content">
         {type !== 'reminder' && type !== 'expense' && <label className="reminder-field"><span><Bell size={15} />Reminder (optional)</span><input type="datetime-local" value={form.reminderAt} onChange={e => field('reminderAt', e.target.value)} />{errors.reminderAt && <small className="field-error">{errors.reminderAt}</small>}</label>}
-        <label>Tags (optional)<input value={tagText} onChange={e => { setTagText(e.target.value); setChanged(true); }} placeholder="Personal, Work" /><small>Separate tags with commas. Up to eight.</small>{errors.tags && <small className="field-error">{errors.tags}</small>}</label>
+        <label>Tags (optional)<input value={tagText} onChange={e => { setTagText(e.target.value); setChanged(true); }} placeholder="Personal, Work" /><small>Separate with commas. Up to eight tags.</small>{errors.tags && <small className="field-error">{errors.tags}</small>}</label>
         <div className="form-options">{type === 'note' && <label className="check-label"><input type="checkbox" checked={form.pinned} onChange={e => field('pinned', e.target.checked)} />Pin this note</label>}<label className="check-label"><input type="checkbox" checked={form.excluded} onChange={e => field('excluded', e.target.checked)} />Exclude this entry from Finn</label></div>
       </div></details>}
       {errors.form && <p className="notice error" role="alert">{errors.form}</p>}

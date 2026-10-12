@@ -17,7 +17,7 @@ test('real Neon signup, sync across devices, isolation, offline queue, conflicts
     await target.getByLabel('Password', { exact: true }).fill(password);
     await target.getByRole('checkbox').check();
     await target.getByRole('button', { name: 'Create account', exact: true }).click();
-    await expect(target.getByRole('heading', { name: 'A few simple defaults.' })).toBeVisible({ timeout: 30000 });
+    await expect(target.getByRole('heading', { name: 'Setup', exact: true })).toBeVisible({ timeout: 30000 });
     await target.getByRole('button', { name: 'Continue to Today' }).click();
     await expect(target.locator('.save-status')).toHaveText('Synced', { timeout: 30000 });
   };
@@ -29,7 +29,7 @@ test('real Neon signup, sync across devices, isolation, offline queue, conflicts
     await expect(target.locator('.save-status')).toHaveText('Synced', { timeout: 30000 });
   };
   const makeNote = async (target, text) => {
-    await target.getByRole('navigation', { name: 'Mobile navigation' }).getByRole('link', { name: 'Today', exact: true }).click(); await target.getByRole('button', { name: 'Add an entry', exact: true }).click(); await target.getByRole('link', { name: 'Note An idea worth keeping' }).click();
+    await target.getByRole('navigation', { name: 'Mobile navigation' }).getByRole('link', { name: 'Today', exact: true }).click(); await target.getByRole('button', { name: 'Add an entry', exact: true }).click(); await target.getByRole('link', { name: 'Note', exact: true }).click();
     await target.getByLabel('Title (optional)').fill(text);
     await target.getByLabel('Your note', { exact: true }).fill('Private connected record.');
     await target.getByRole('button', { name: 'Save entry', exact: true }).click();

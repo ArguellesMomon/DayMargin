@@ -6,6 +6,8 @@ An initial coded version now follows this specification. See [Implementation sta
 
 **Complete local UI review — October 11:** After reviewing Today and Calendar, the user requested all remaining pages. Library now uses dated/pinned groups and URL-persisted filters; expenses have a clearer period summary; Finn has a warmer opening and readable conversation; forms put essentials before More options; details, grouped Settings, welcome, account/recovery and setup screens follow the same Manrope hierarchy. Shared dialogs and parent navigation are also refined. See [remaining screen designs](REMAINING_UI.md) for the current implemented concepts and checks. These local revisions supersede the earlier layout descriptions where different; feature authority, record privacy, recurrence and confirmation rules remain applicable. No commit, push or deployment is authorized by this UI request.
 
+**Current copy direction ? October 12:** Routine screens use concise page names, type labels and actions. Decorative eyebrows, recurring slogans and explanatory paragraphs have been removed. Existing titles/prose below describe earlier concepts where superseded; see [Interface copy](INTERFACE_COPY.md) for the current implementation.
+
 ## 1. Overall concept
 
 Daymargin is a personal daily notebook that connects plans, notes, and spending. The interface should make capture and finding information feel immediate. Today answers what matters now; Calendar shows time; Library holds records; Finn helps interpret them.
@@ -57,6 +59,8 @@ Light: white entry surfaces, a near-white background, charcoal text and warm yel
 **Behavior:** Overdue tasks retain their due dates. All-day events remain clearly labeled, recurring exceptions are respected, and reminders appear at their actual scheduled times. The current-plan highlight refreshes with Manila time. Completion updates the overview and provides Undo. Empty states suggest a useful action. Existing connection/sync feedback is retained. Today remains curated, with a seven-task limit and a link to the full task list.
 
 ## 6. Calendar
+
+**October 12 local update, revised by the user:** Calendar's Add entry opens Event, Task or Reminder choices for the selected date. The separate expand button and inline month view were removed; the existing month/date heading opens the full picker. Calendar, Today and Library share each entry, and View on calendar exposes its schedule/attached-alert date. See [Calendar integration](CALENDAR_INTEGRATION.md) and [quick controls](QUICK_CONTROLS.md).
 
 **Purpose:** Make time commitments and available gaps understandable.
 
@@ -129,6 +133,8 @@ The Add trigger sits in the page header/action area and remains accessible withi
 **Behavior:** Return to the originating screen with its selection preserved. Save changes to one record so Today, Calendar, Library, summaries, and Finn's permitted context agree. Deleted source links explain that the entry is no longer available rather than inventing its old contents.
 
 ## 13. Finn chat
+
+**October 12 chat revision:** Submitted messages appear immediately, the composer clears while Finn thinks, and a next draft remains safe. The chat has a larger thinking pose, animated dots, brief message entrances, explicit retry/reload recovery and a Latest messages shortcut when reading older history. Both reduced-motion preferences remain supported. See [Finn chat UI](FINN_CHAT_UI.md).
 
 **Purpose:** Help users interpret their records and decide a next action.
 

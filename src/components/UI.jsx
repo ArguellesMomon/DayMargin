@@ -18,13 +18,13 @@ export function FinnAvatar({ size = 'small', thinking = false, reply = 0 }) {
   </span>;
 }
 export function PageHeading({ eyebrow, title, children, action }) {
-  return <header className="page-heading"><div><p className="eyebrow">{eyebrow}</p><h1>{title}</h1>{children && <p className="page-description">{children}</p>}</div>{action}</header>;
+  return <header className="page-heading"><div>{eyebrow && <p className="eyebrow">{eyebrow}</p>}<h1>{title}</h1>{children && <p className="page-description">{children}</p>}</div>{action}</header>;
 }
 export function Section({ label, count, action, children, className = '', id }) {
   return <section id={id} className={`section ${className}`}><div className="section-heading"><h2><span className="margin-mark" />{label}{count !== undefined && <span className="count">{count}</span>}</h2>{action}</div>{children}</section>;
 }
 export function Empty({ icon: Icon = FileText, title, text, action }) {
-  return <div className="empty"><Icon size={23} strokeWidth={1.4} /><h3>{title}</h3><p>{text}</p>{action}</div>;
+  return <div className="empty"><Icon size={23} strokeWidth={1.4} /><h3>{title}</h3>{text && <p>{text}</p>}{action}</div>;
 }
 export function EntryRow({ record, day, compact = false, overlap = false, asReminder = false, showType = false, returnTo }) {
   const { data, notify, preview } = useDaymargin();
@@ -69,7 +69,7 @@ export function Dialog({ title, children, onClose, className = '' }) {
     <div className="dialog-heading"><h2>{title}</h2><button className="icon-button" type="button" aria-label="Close dialog" onClick={onClose}><X size={20} /></button></div>{children}
   </dialog>;
 }
-export function Capture({ onClose, day }) {
-  return <Dialog title="Make a little room." onClose={onClose} className="capture"><p className="muted">What would you like to keep?</p><div className="capture-options">{Object.entries(TYPE_META).map(([type, { icon: Icon, label, description }]) => <Link key={type} to={`/new/${type}${day ? `?day=${day}` : ''}`} onClick={onClose}><span className="capture-icon"><Icon size={21} /></span><span><strong>{label}</strong><small>{description}</small></span><Plus size={17} /></Link>)}</div></Dialog>;
+export function Capture({ onClose, day, returnTo, types = Object.keys(TYPE_META) }) {
+  return <Dialog title="Add entry" onClose={onClose} className="capture"><div className="capture-options">{types.map(type => { const { icon: Icon, label } = TYPE_META[type]; return <Link key={type} to={`/new/${type}${day ? `?day=${day}` : ''}`} state={returnTo ? { returnTo } : undefined} onClick={onClose}><span className="capture-icon"><Icon size={21} /></span><span><strong>{label}</strong></span><Plus size={17} /></Link>; })}</div></Dialog>;
 }
 export function BackLink({ to = '/', children = 'Back' }) { return <Link className="back-link" to={to}><ArrowRight size={16} className="reverse" />{children}</Link>; }

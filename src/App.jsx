@@ -1,7 +1,8 @@
 import BrandMark from './components/BrandMark.jsx';
+import { organizerReturnTo } from './lib/navigation.js';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Navigate, NavLink, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
-import { CalendarDays, LayoutList, Library, MessageCircle, Plus, Settings, WifiOff, X, ArrowUpRight } from 'lucide-react';
+import { CalendarDays, LayoutList, Library, MessageCircle, Plus, Settings, WifiOff, X, ArrowUpRight, Sun, Moon } from 'lucide-react';
 import { registerSW } from 'virtual:pwa-register';
 import { OrganizerContext } from './context.jsx';
 import { useOrganizer } from './hooks/useOrganizer.js';
@@ -25,6 +26,7 @@ export default function App() {
   const [preview, setPreview] = useState(() => sessionStorage.getItem('daymargin-preview') === 'true');
   const [authReady, setAuthReady] = useState(!cloudConfigured);
   const [preferences, setPreferences] = useState({ theme: 'system', reducedMotion: false });
+  const [activeTheme, setActiveTheme] = useState(() => matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
   const preferencesRef = useRef({ theme: 'system', reducedMotion: false });
   const preferenceWrites = useRef(Promise.resolve());
   const preferencesEdited = useRef(false);
@@ -44,6 +46,7 @@ export default function App() {
     const query = matchMedia('(prefers-color-scheme: dark)');
     const apply = () => {
       document.documentElement.dataset.theme = preferences.theme === 'system' ? (query.matches ? 'dark' : 'light') : preferences.theme;
+      setActiveTheme(document.documentElement.dataset.theme);
       document.documentElement.dataset.reducedMotion = preferences.reducedMotion ? 'true' : 'false';
       const browserColor = document.querySelector('meta[name="theme-color"]');
       if (browserColor) browserColor.content = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();
@@ -87,17 +90,17 @@ export default function App() {
   const visible = !standalone && account;
   const detailRecord = data.records.find(record => record.id === location.pathname.split('/')[2]);
   const entryDestination = location.pathname.startsWith('/new/') || location.pathname.startsWith('/record/')
-    ? location.state?.returnTo?.startsWith('/library') ? '/library' : location.pathname === '/new/event' || detailRecord?.type === 'event' ? '/calendar' : '/library'
+    ? location.state?.returnTo ? organizerReturnTo(location.state.returnTo).split('?')[0] : location.pathname === '/new/event' || detailRecord?.type === 'event' ? '/calendar' : '/library'
     : null;
   const navClass = path => ({ isActive }) => isActive || path === entryDestination ? 'active' : undefined;
   return <OrganizerContext.Provider value={context}>
     <a href="#main" className="skip-link">Skip to content</a>
     <div className={visible ? 'app-layout' : 'standalone-layout'}>
-      {visible && <aside className="sidebar"><NavLink to="/" className="brand"><BrandMark /><span>daymargin<span className="brand-dot">.</span></span></NavLink><p className="sidebar-caption">A little more room for your day.</p>
+      {visible && <aside className="sidebar"><NavLink to="/" className="brand"><BrandMark /><span>daymargin<span className="brand-dot">.</span></span></NavLink>
         <nav aria-label="Main navigation">{destinations.map(({ path, label, icon: Icon }) => <NavLink key={path} to={path} end={path === '/'} className={navClass(path)} aria-current={path === entryDestination ? 'page' : undefined}><Icon size={19} strokeWidth={1.7} /><span>{label}</span><span className="nav-marker" /></NavLink>)}</nav>
-        <div className="sidebar-bottom"><span className="sidebar-rule" /><p>Keep the details.<br />Find your next step.</p><NavLink className="settings-link" to="/settings"><Settings size={18} />Settings</NavLink></div></aside>}
+        <div className="sidebar-bottom"><NavLink className="settings-link" to="/settings"><Settings size={18} />Settings</NavLink></div></aside>}
       <div className="workspace">
-        {visible && <div className="topbar"><span className="mobile-wordmark">daymargin.</span><span className="topbar-date">{dateLabel(today(), { weekday: 'long', month: 'long' })}</span><div className="topbar-actions"><span className="save-status">{preview && !user ? 'Local preview' : data.syncing ? 'Syncing…' : data.conflicts.length ? 'Review sync conflicts' : data.queue.length ? 'Waiting to sync' : data.lastSync ? 'Synced' : 'Saved on this device'}</span><button className="icon-button" aria-label="Open settings" onClick={() => navigate('/settings')}><Settings size={19} /></button></div></div>}
+        {visible && <div className="topbar"><span className="mobile-wordmark">daymargin.</span><span className="topbar-date">{dateLabel(today(), { weekday: 'long', month: 'long' })}</span><div className="topbar-actions"><span className="save-status">{preview && !user ? 'Local preview' : data.syncing ? 'Syncing…' : data.conflicts.length ? 'Review sync conflicts' : data.queue.length ? 'Waiting to sync' : data.lastSync ? 'Synced' : 'Saved on this device'}</span><button className="icon-button theme-toggle" aria-label={activeTheme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'} title={activeTheme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'} onClick={() => changePreferences({ theme: activeTheme === 'dark' ? 'light' : 'dark' })}>{activeTheme === 'dark' ? <Sun size={19} /> : <Moon size={19} />}</button><button className="icon-button" aria-label="Open settings" onClick={() => navigate('/settings')}><Settings size={19} /></button></div></div>}
         {visible && (!online || preview && !user) && <div className={`mode-bar ${!online ? 'offline' : ''}`}>{!online ? <><WifiOff size={14} /><span>Offline. Entries save on this device.</span></> : <><span className="status-dot" /><span>Local preview · Entries stay on this device</span></>}{online && !user && <button onClick={() => navigate('/settings')}>About this preview <ArrowUpRight size={13} /></button>}</div>}
         {data.error && visible && <div className="notice error" role="alert">{data.error}{user && <button onClick={data.sync}>Retry sync</button>}</div>}
         <main id="main" className={visible ? 'main-content' : ''}>
@@ -112,7 +115,7 @@ export default function App() {
       </div>
       {visible && <nav className="bottom-nav" aria-label="Mobile navigation">{destinations.map(({ path, label, icon: Icon }) => <NavLink key={path} to={path} end={path === '/'} className={navClass(path)} aria-current={path === entryDestination ? 'page' : undefined}><Icon size={21} strokeWidth={1.7} /><span>{label}</span></NavLink>)}</nav>}
     </div>
-    {capture && <Capture day={location.pathname === '/calendar' ? new URLSearchParams(location.search).get('date') : null} onClose={() => setCapture(false)} />}
+    {capture && <Capture day={location.pathname === '/calendar' ? new URLSearchParams(location.search).get('date') : null} returnTo={location.pathname === '/calendar' ? `${location.pathname}${location.search}` : undefined} onClose={() => setCapture(false)} />}
     {toast && <div className="toast" role="status"><span>{toast.message}</span>{toast.undo && <button onClick={async () => { try { await toast.undo(); setToast(null); } catch { notify('The change could not be undone. Please retry.'); } }}>Undo</button>}<button className="icon-button" aria-label="Dismiss message" onClick={() => setToast(null)}><X size={15} /></button></div>}
     {updateAvailable && <div className="update-notice" role="status"><span>A new version is ready. Saved drafts stay on this device.</span><button onClick={() => updateServiceWorker.current?.(true)}>Update</button><button className="icon-button" aria-label="Update later" onClick={() => setUpdateAvailable(false)}><X size={15} /></button></div>}
   </OrganizerContext.Provider>;

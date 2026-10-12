@@ -6,7 +6,7 @@ async function preview(page) {
   await page.addInitScript(() => sessionStorage.setItem('daymargin-preview', 'true'));
   await page.route('**/api/auth/**', route => route.fulfill({ json: { user: null, session: null } }));
   await page.goto('/calendar');
-  await expect(page.getByRole('heading', { name: 'Your calendar.', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Calendar', exact: true })).toBeVisible();
 }
 
 test('Calendar date navigation, keyboard month selection, capture and completion preserve the selected day', async ({ page }) => {
@@ -36,7 +36,8 @@ test('Calendar date navigation, keyboard month selection, capture and completion
   await dialog.getByRole('button', { name: 'Next month', exact: true }).click();
   await dialog.locator('[data-day="2026-12-31"]').click();
   await expect(page).toHaveURL(/date=2026-12-31/);
-  await page.getByRole('link', { name: 'Add event', exact: true }).first().click();
+  await page.getByRole('button', { name: 'Add entry', exact: true }).first().click();
+  await page.getByRole('dialog').getByRole('link', { name: 'Event', exact: true }).click();
   await expect(page.getByLabel('Date', { exact: true })).toHaveValue('2026-12-31');
   await page.getByLabel('Title', { exact: true }).fill('A year-end walk');
   await page.getByLabel('All-day event').check();
@@ -77,7 +78,7 @@ test('Calendar uses recurring instances, actual overlaps and source-linked remin
   await expect(attached).toHaveAttribute('href', '/record/30000000-0000-4000-8000-000000000004?day=2026-10-12');
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   records = []; await page.reload();
-  await expect(page.getByRole('heading', { name: 'A little breathing room.' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'No events.', exact: true })).toBeVisible();
   await expect(page.locator('.cal-day-summary')).toHaveText('0 events0 due');
 });
 
@@ -99,4 +100,113 @@ test('Calendar and the month picker stay readable in both themes on phones, tabl
     }
   }
   expect(errors).toEqual([]);
+});
+
+test('Entries captured outside Calendar share their creation, edits and deletion with Calendar', async ({ page }) => {
+  await preview(page);
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Add an entry', exact: true }).click();
+  await page.getByRole('link', { name: 'Event', exact: true }).click();
+  await page.getByLabel('Title', { exact: true }).fill('One shared appointment');
+  await page.getByLabel('Date', { exact: true }).fill('2026-10-22');
+  await page.getByLabel('All-day event').check();
+  await page.getByRole('button', { name: 'Save entry', exact: true }).click();
+  await expect(page).toHaveURL(/\/record\/[\w-]+$/);
+  const detailUrl = page.url();
+  await page.getByRole('link', { name: 'View on calendar', exact: true }).click();
+  await expect(page).toHaveURL(/date=2026-10-22/);
+  await expect(page.locator('.cal-event').filter({ hasText: 'One shared appointment' })).toHaveCount(1);
+  await page.goto('/library?q=One%20shared%20appointment');
+  await expect(page.locator('.entry-content')).toHaveCount(1);
+  await page.locator('.entry-content').click();
+  expect(page.url()).toBe(detailUrl);
+  await page.getByRole('link', { name: 'Edit entry', exact: true }).click();
+  await page.getByLabel('Date', { exact: true }).fill('2026-10-23');
+  await page.getByRole('button', { name: 'Save entry', exact: true }).click();
+  await page.getByRole('link', { name: 'View on calendar', exact: true }).click();
+  await expect(page).toHaveURL(/date=2026-10-23/);
+  await expect(page.locator('.cal-event').filter({ hasText: 'One shared appointment' })).toHaveCount(1);
+  await page.goto('/calendar?date=2026-10-22');
+  await expect(page.locator('.cal-event').filter({ hasText: 'One shared appointment' })).toHaveCount(0);
+  await page.goto('/calendar?date=2026-10-23');
+  await page.locator('.cal-event').filter({ hasText: 'One shared appointment' }).click();
+  await page.getByRole('button', { name: 'Delete', exact: true }).click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Delete entry', exact: true }).click();
+  await expect(page).toHaveURL(/date=2026-10-23/);
+  await expect(page.locator('.cal-event').filter({ hasText: 'One shared appointment' })).toHaveCount(0);
+  await page.goto('/library?q=One%20shared%20appointment');
+  await expect(page.locator('.entry-content')).toHaveCount(0);
+});
+
+test('Calendar-created reminders and tasks appear in Library and Today without losing the selected date', async ({ page }) => {
+  await preview(page);
+  // Avoid opening native permission UI; delivery setup is covered separately.
+  await page.addInitScript(() => Object.defineProperty(window, 'Notification', { configurable: true, value: undefined }));
+  await page.goto('/calendar?date=2026-10-11');
+  await page.getByRole('link', { name: 'Add a reminder for this day', exact: true }).click();
+  await expect(page.getByLabel('Date', { exact: true })).toHaveValue('2026-10-11');
+  await expect(page.getByRole('button', { name: 'Back to calendar', exact: true })).toBeVisible();
+  await page.getByLabel('Title', { exact: true }).fill('Shared reminder from Calendar');
+  await page.getByLabel('Reminder time · Asia/Manila').fill('14:15');
+  await page.getByRole('button', { name: 'Save entry', exact: true }).click();
+  await page.getByRole('link', { name: 'Back to calendar', exact: true }).click();
+  await expect(page).toHaveURL(/date=2026-10-11/);
+  await expect(page.locator('.cal-due .entry-content').filter({ hasText: 'Shared reminder from Calendar' })).toContainText('2:15 PM');
+  await expect(page.locator('.cal-week').getByRole('button', { name: /Sunday, October 11, 2026/ })).toHaveAttribute('aria-label', /3 due/);
+  await page.goto('/');
+  await expect(page.locator('.today-agenda-item').filter({ hasText: 'Shared reminder from Calendar' })).toBeVisible();
+  await page.goto('/library?q=Shared%20reminder%20from%20Calendar');
+  await expect(page.locator('.entry-content')).toHaveCount(1);
+  await page.locator('.entry-content').click();
+  await page.getByRole('link', { name: 'Edit entry', exact: true }).click();
+  await page.getByLabel('Reminder time · Asia/Manila').fill('15:45');
+  await page.getByRole('button', { name: 'Save entry', exact: true }).click();
+  await page.getByRole('link', { name: 'View on calendar', exact: true }).click();
+  await expect(page.locator('.cal-due .entry-content').filter({ hasText: 'Shared reminder from Calendar' })).toContainText('3:45 PM');
+  await page.getByRole('link', { name: 'Add a task for this day', exact: true }).click();
+  await page.getByLabel('Title', { exact: true }).fill('Shared task from Calendar');
+  await page.getByRole('button', { name: 'Save entry', exact: true }).click();
+  await page.getByRole('link', { name: 'Back to calendar', exact: true }).click();
+  await expect(page).toHaveURL(/date=2026-10-11/);
+  await page.getByRole('button', { name: 'Complete Shared task from Calendar', exact: true }).click();
+  await page.goto('/library?q=Shared%20task%20from%20Calendar');
+  await expect(page.getByRole('button', { name: 'Reopen Shared task from Calendar', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Reopen Shared task from Calendar', exact: true }).click();
+  await page.goto('/calendar?date=2026-10-11');
+  await expect(page.getByRole('button', { name: 'Complete Shared task from Calendar', exact: true })).toBeVisible();
+  await page.locator('.cal-due .entry-content').filter({ hasText: 'Shared reminder from Calendar' }).click();
+  await page.getByRole('link', { name: 'Edit entry', exact: true }).click();
+  await page.getByLabel('Date', { exact: true }).fill('2026-10-12');
+  await page.getByRole('button', { name: 'Save entry', exact: true }).click();
+  await page.getByRole('link', { name: 'Back to calendar', exact: true }).click();
+  await expect(page).toHaveURL(/date=2026-10-12/);
+  await expect(page.locator('.cal-due .entry-content').filter({ hasText: 'Shared reminder from Calendar' })).toBeVisible();
+  await page.goto('/calendar?date=2026-10-11');
+  await expect(page.locator('.cal-due .entry-content').filter({ hasText: 'Shared reminder from Calendar' })).toHaveCount(0);
+});
+
+test('Calendar offers event/task/reminder capture and keeps its existing date picker', async ({ page }) => {
+  await preview(page);
+  await page.goto('/calendar?date=2026-11-12&view=month');
+  await expect(page.getByRole('button', { name: 'Expand calendar', exact: true })).toHaveCount(0);
+  await expect(page.locator('.cal-week')).toBeVisible();
+  for (const [choice, route] of [['Event', 'event'], ['Task', 'task'], ['Reminder', 'reminder']]) {
+    const trigger = page.getByRole('button', { name: 'Add entry', exact: true }).first();
+    await trigger.click();
+    const dialog = page.getByRole('dialog', { name: 'Add entry', exact: true });
+    await expect(dialog.getByRole('link')).toHaveCount(3);
+    await dialog.getByRole('link', { name: choice, exact: true }).click();
+    await expect(page).toHaveURL(new RegExp('/new/' + route + '[?]day=2026-11-12'));
+    await expect(page.getByLabel(route === 'task' ? 'Due date (optional)' : 'Date', { exact: true })).toHaveValue('2026-11-12');
+    await page.getByRole('button', { name: 'Close', exact: true }).click();
+    await expect(page).toHaveURL(/calendar[?]date=2026-11-12$/);
+  }
+  await page.getByRole('button', { name: 'Add entry', exact: true }).first().click();
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('button', { name: 'Add entry', exact: true }).first()).toBeFocused();
+  await page.locator('.cal-month-button').click();
+  const picker = page.getByRole('dialog', { name: 'Choose a date' });
+  await expect(picker.locator('.cal-month-grid button')).toHaveCount(42);
+  await picker.getByLabel('Jump to date').fill('2026-12-31');
+  await expect(page).toHaveURL(/date=2026-12-31$/);
 });

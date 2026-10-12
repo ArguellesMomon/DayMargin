@@ -63,12 +63,12 @@
 .today-agenda-item.is-earlier .today-agenda-time { color: var(--muted); }
 .today-overlap { color: var(--danger); }
 .today-page .today-finn { padding: 20px 22px 22px; margin: 0 0 30px; background: var(--accent-soft); border: 1px solid var(--line); border-radius: 12px; }
-.today-finn-top { display: flex; align-items: flex-start; gap: 10px; justify-content: space-between; }
+.today-finn-top { display: flex; align-items: center; gap: 10px; justify-content: space-between; }
 .today-panel-label { color: var(--accent); font-size: 9px; letter-spacing: 1.4px; font-weight: 700; line-height: 1.8; max-width: 105px; padding-top: 8px; }
 .today-page .today-finn .finn-avatar { width: 92px; height: 92px; float: none; margin: 0 -8px -3px 0; }
 .today-page .today-finn h2 { font-size: 27px; line-height: 1.25; letter-spacing: -1px; font-weight: 600; margin-top: 6px; }
 .today-page .today-finn p { font-size: 12px; line-height: 1.9; color: var(--muted); margin: 13px 0 19px; }
-.today-finn-link { display: flex; align-items: center; justify-content: space-between; padding-top: 16px; border-top: 1px solid var(--line); color: var(--accent); font-size: 12px; font-weight: 600; min-height: 44px; }
+.today-finn-link { display: flex; align-items: center; justify-content: space-between; padding-top: 12px; border-top: 1px solid var(--line); color: var(--accent); font-size: 12px; font-weight: 600; min-height: 44px; }
 .today-notes .today-section-heading { margin-bottom: 2px; }
 .today-notes .icon-button { width: 44px; height: 44px; }
 .today-note { display: block; padding: 18px 0; border-bottom: 1px solid var(--line); }
@@ -125,7 +125,7 @@
   .today-agenda-title { font-size: 14px; }
   .today-side { grid-template-columns: 1fr; gap: 28px; }
   .today-page .today-finn { padding: 20px; }
-  .today-finn-top { float: right; margin-left: 15px; }
+  .today-finn-top { float: none; margin-left: 0; }
   .today-panel-label { display: none; }
   .today-page .today-finn .finn-avatar { width: 105px; height: 105px; margin: 0; }
   .today-page .today-finn h2 { font-size: 27px; margin-top: 0; }

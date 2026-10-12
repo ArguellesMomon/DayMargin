@@ -6,6 +6,7 @@ import { sampleRecords } from '../lib/sample.js';
 export function useOrganizer(account, preview) {
   const [snapshot, setSnapshot] = useState(emptySnapshot);
   const [loadedAccount, setLoadedAccount] = useState(null);
+  const readyAccount = useRef(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [syncing, setSyncing] = useState(false);
@@ -15,6 +16,7 @@ export function useOrganizer(account, preview) {
   const syncLock = useRef(null);
   useEffect(() => {
     const gen = ++generation.current;
+    readyAccount.current = null;
     setLoadedAccount(null); setLoading(true); setError(''); setSnapshot(emptySnapshot()); current.current = emptySnapshot();
     serial.current = Promise.resolve(); syncLock.current = null; setSyncing(false);
     if (!account) { setLoading(false); return; }
@@ -23,7 +25,7 @@ export function useOrganizer(account, preview) {
         value = { ...value, records: sampleRecords(), initialized: true };
         await writeAccount(account, value);
       }
-      if (gen === generation.current) { current.current = value; setSnapshot(value); setLoadedAccount(account); setLoading(false); }
+      if (gen === generation.current) { readyAccount.current = account; current.current = value; setSnapshot(value); setLoadedAccount(account); setLoading(false); }
     }).catch(() => { if (gen === generation.current) { setError('Device storage could not be opened. Check your browser’s storage settings.'); setLoading(false); } });
     return () => { generation.current++; };
   }, [account, preview]);
@@ -31,7 +33,7 @@ export function useOrganizer(account, preview) {
   const transact = useCallback(fn => {
     const gen = generation.current;
     const operation = serial.current.catch(() => {}).then(async () => {
-      if (!account || gen !== generation.current) throw new Error('Please reopen your account before saving.');
+      if (!account || readyAccount.current !== account || gen !== generation.current) throw new Error('Please reopen your account before saving.');
       const next = await fn(current.current);
       await writeAccount(account, next);
       if (gen !== generation.current) return;
@@ -49,11 +51,11 @@ export function useOrganizer(account, preview) {
   }), [transact, preview]);
   const draft = useCallback((key, value) => transact(s => ({ ...s, drafts: { ...s.drafts, [key]: value } })), [transact]);
   const clearDraft = useCallback(key => transact(s => { const drafts = { ...s.drafts }; delete drafts[key]; return { ...s, drafts }; }), [transact]);
-  const chat = useCallback(messages => transact(s => ({ ...s, chats: messages })), [transact]);
+  const chat = useCallback(messages => transact(s => ({ ...s, chats: typeof messages === 'function' ? messages(s.chats) : messages })), [transact]);
   const resetPreview = useCallback(() => transact(() => ({ ...emptySnapshot(), initialized: true })), [transact]);
 
   const sync = useCallback(async () => {
-    if (!account || preview || !cloudConfigured || !navigator.onLine || syncLock.current === generation.current) return;
+    if (!account || readyAccount.current !== account || preview || !cloudConfigured || !navigator.onLine || syncLock.current === generation.current) return;
     const gen = generation.current;
     syncLock.current = gen; setSyncing(true);
     try {
@@ -88,13 +90,13 @@ export function useOrganizer(account, preview) {
   }, [account, preview, transact]);
 
   useEffect(() => {
-    if (loading || preview || !account) return;
+    if (loading || loadedAccount !== account || preview || !account) return;
     sync();
     const timer = setInterval(sync, 45000);
     window.addEventListener('online', sync);
     window.addEventListener('focus', sync);
     return () => { clearInterval(timer); window.removeEventListener('online', sync); window.removeEventListener('focus', sync); };
-  }, [loading, preview, account, sync]);
+  }, [loading, loadedAccount, preview, account, sync]);
   useEffect(() => { if (snapshot.queue.length && !loading) sync(); }, [snapshot.queue.length, loading, sync]);
 
   const resolve = useCallback((id, keepLocal) => transact(s => {

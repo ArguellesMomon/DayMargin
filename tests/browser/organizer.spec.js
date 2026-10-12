@@ -1,8 +1,8 @@
 import { test, expect } from '@playwright/test';
-test.beforeEach(async ({ page }) => { await page.goto('/'); await page.getByRole('button', { name: /Explore Daymargin|Open development preview/ }).click(); await expect(page.getByRole('heading', { name: 'Your day, in view.' })).toBeVisible(); });
+test.beforeEach(async ({ page }) => { await page.goto('/'); await page.getByRole('button', { name: /Explore Daymargin|Open development preview/ }).click(); await expect(page.getByRole('heading', { name: 'Today', exact: true })).toBeVisible(); });
 test('mobile capture, editing, search, deletion/undo, and reload persistence', async ({ page }) => {
   await page.getByRole('button', { name: 'Add an entry', exact: true }).click();
-  await page.getByRole('link', { name: 'Note An idea worth keeping' }).click();
+  await page.getByRole('link', { name: 'Note', exact: true }).click();
   await page.getByLabel('Title (optional)').fill('Browser test note');
   await page.getByLabel('Your note', { exact: true }).fill('A persistent thought.');
   await page.getByRole('button', { name: 'Save entry', exact: true }).click();
@@ -38,6 +38,8 @@ test('draft restore, dark mode, reduced motion, and unavailable Finn preserve in
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
 });
 test('wide and narrow layouts have no horizontal overflow or runtime errors', async ({ page }) => {
+  // This scenario includes 20 complete page loads across four viewport sizes.
+  test.setTimeout(60000);
   const errors = []; page.on('pageerror', error => errors.push(error.message));
   for (const width of [360,390,768,1440]) { await page.setViewportSize({ width, height: 900 }); for (const route of ['/', '/calendar','/library?filter=expenses','/finn','/settings']) { await page.goto(route); await expect(page.locator('h1')).toBeVisible(); expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true); } }
   expect(errors).toEqual([]);

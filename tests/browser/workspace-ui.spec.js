@@ -5,7 +5,7 @@ async function preview(page) {
   await page.addInitScript(() => sessionStorage.setItem('daymargin-preview', 'true'));
   await page.route('**/api/auth/**', route => route.fulfill({ json: { user: null, session: null } }));
   await page.goto('/library');
-  await expect(page.getByRole('heading', { name: 'Your library.', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Library', exact: true })).toBeVisible();
 }
 
 test('Library keeps filters through details, editing, reload and clearing search', async ({ page }) => {
@@ -95,7 +95,7 @@ test('Setup presents the fixed defaults and persists the selected appearance wit
   } }));
   await page.route('**/api/records*', route => route.fulfill({ json: { records: [], next: null } }));
   await page.goto('/setup');
-  await expect(page.getByRole('heading', { name: 'A few simple defaults.' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Setup', exact: true })).toBeVisible();
   await expect(page.locator('.defaults-list')).toContainText('PHP · Philippine peso');
   await expect(page.locator('.defaults-list')).toContainText('Asia/Manila');
   await page.getByLabel('Appearance').selectOption('dark');

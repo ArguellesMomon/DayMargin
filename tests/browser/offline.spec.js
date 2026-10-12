@@ -17,12 +17,12 @@ test('built PWA reloads and saves a note while offline', async ({ page, context,
     await page.getByRole('button', { name: 'Continue to Today' }).click();
     await expect(page.locator('.save-status')).toHaveText('Synced', { timeout: 30000 });
   } else await page.getByRole('button', { name: 'Explore Daymargin' }).click();
-  await expect(page.getByRole('heading', { name: 'Your day, in view.' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Today', exact: true })).toBeVisible();
   await page.evaluate(async () => { const registration = await navigator.serviceWorker.ready; if (!registration.active) throw new Error('No active service worker'); });
-  await page.reload(); await expect(page.getByRole('heading', { name: 'Your day, in view.' })).toBeVisible();
+  await page.reload(); await expect(page.getByRole('heading', { name: 'Today', exact: true })).toBeVisible();
   await context.setOffline(true); await page.reload();
   await expect(page.getByText('Offline. Entries save on this device.', { exact: true })).toBeVisible();
-  await page.getByRole('button', { name: 'Add an entry', exact: true }).click(); await page.getByRole('link', { name: 'Note An idea worth keeping' }).click();
+  await page.getByRole('button', { name: 'Add an entry', exact: true }).click(); await page.getByRole('link', { name: 'Note', exact: true }).click();
   await page.getByLabel('Title (optional)').fill('Offline note'); await page.getByRole('textbox', { name: 'Your note', exact: true }).fill('Saved without a connection.');
   await page.getByRole('button', { name: 'Save entry', exact: true }).click(); await expect(page.getByRole('heading', { name: 'Offline note' })).toBeVisible();
   await page.reload(); await expect(page.getByText('Saved without a connection.', { exact: true })).toBeVisible();

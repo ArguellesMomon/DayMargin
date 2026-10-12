@@ -107,11 +107,11 @@
   .cal-due { border-left: 0; padding-left: 0; }
 }
 @media (max-width: 600px) {
-  .calendar-page .cal-header { display: block; position: relative; margin-bottom: 26px; }
+  .calendar-page .cal-header { display: flex; align-items: center; gap: 16px; margin-bottom: 26px; }
   .cal-eyebrow { min-height: 44px; display: flex; align-items: center; padding-right: 118px; margin-bottom: 9px; font-size: 9px; line-height: 1.8; }
   .calendar-page h1 { font-size: 37px; letter-spacing: -1.8px; }
   .cal-description { font-size: 12px; margin-top: 11px; }
-  .calendar-page .cal-add { position: absolute; top: 0; right: 0; font-size: 12px; min-height: 44px; padding: 10px 12px; gap: 5px; }
+  .calendar-page .cal-add { position: static; font-size: 12px; min-height: 44px; padding: 10px 12px; gap: 5px; }
   .cal-toolbar { padding-top: 14px; gap: 5px; }
   .cal-month-button { font-size: 13px; gap: 6px; letter-spacing: -.2px; }
   .cal-month-button > svg:first-child { display: none; }
@@ -140,3 +140,6 @@
   .cal-date-dialog { padding: 20px 16px; }
   .cal-keyboard-hint { display: none; }
 }
+
+.editor-calendar-note { display: flex; align-items: flex-start; gap: 8px; color: var(--muted); font-size: 12px; line-height: 1.8; margin: -15px 0 26px; }
+.editor-calendar-note svg { margin-top: 4px; }

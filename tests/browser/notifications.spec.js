@@ -5,7 +5,7 @@ async function settings(page) {
   // correctly hides the development-only preview button when Auth is configured.
   await page.addInitScript(() => sessionStorage.setItem('daymargin-preview', 'true'));
   await page.goto('/settings');
-  await expect(page.getByRole('heading', { name: 'Make it your own.' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Settings', exact: true })).toBeVisible();
 }
 async function mockNotifications(page, permission = 'default') {
   await page.addInitScript(initialPermission => {
@@ -57,7 +57,7 @@ test('explicit enable action requests permission once and permits a private test
   await page.getByRole('button', { name: 'Send test notification', exact: true }).click();
   await expect(page.getByRole('status').filter({ hasText: 'Test notification sent' })).toBeVisible();
   expect(await page.evaluate(() => window.testNotifications.length)).toBe(1);
-  await expect(page.getByText('Automatic scheduled notifications are not connected yet.', { exact: false })).toBeVisible();
+  await expect(page.getByText('Scheduled notification delivery is not connected yet.', { exact: false })).toBeVisible();
 });
 test('blocked permission offers settings help and refreshes when the user returns', async ({ page }) => {
   await mockNotifications(page, 'denied');

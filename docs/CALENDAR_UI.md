@@ -69,3 +69,11 @@ Final check results are recorded in [Implementation status](IMPLEMENTATION_STATU
 
 Review locally at `http://127.0.0.1:5174/calendar`. The deployed website retains
 its prior Calendar UI until the user explicitly requests commit/push/deployment.
+
+## Subsequent integration and expanded view ? October 12, 2026
+
+The October 11 UI was committed/pushed with the approved theme release. The next local revision adds shared-entry navigation and an inline expanded month overview. It preserves actual dates/month view through capture/details/editing, returns moved entries to their saved dates, exposes View on calendar and adds a direct agenda shortcut. See [Calendar integration](CALENDAR_INTEGRATION.md) for current behavior and release scope; earlier local-only statements above describe the initial review.
+
+## Subsequent user correction ? October 12, 2026
+
+The user removed the separate expansion feature after noticing the existing date picker. The week strip and month dialog remain. Calendar Add entry now opens Event, Task or Reminder choices for the selected date, preserving the shared-record and return-navigation changes. The current behavior is documented in [Calendar entry integration](CALENDAR_INTEGRATION.md) and [quick controls](QUICK_CONTROLS.md).

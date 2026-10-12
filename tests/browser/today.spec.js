@@ -6,7 +6,7 @@ async function preview(page) {
   await page.addInitScript(() => sessionStorage.setItem('daymargin-preview', 'true'));
   await page.route('**/api/auth/**', route => route.fulfill({ json: { user: null, session: null } }));
   await page.goto('/');
-  await expect(page.getByRole('heading', { name: 'Your day, in view.', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Today', exact: true })).toBeVisible();
 }
 
 test('Today completion, undo and capture keep the overview and next steps current', async ({ page }) => {
@@ -21,13 +21,13 @@ test('Today completion, undo and capture keep the overview and next steps curren
   await expect(tasks).toContainText('3');
   await expect(page.locator('.today-task-list').getByText('Send the project proposal', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Add an entry', exact: true }).click();
-  await page.getByRole('link', { name: 'Task A small step to get done' }).click();
+  await page.getByRole('link', { name: 'Task', exact: true }).click();
   await page.getByLabel('Title', { exact: true }).fill('A new step from Today');
   await page.getByRole('button', { name: 'Save entry', exact: true }).click();
   await page.goto('/');
   await expect(tasks).toContainText('4');
   await expect(page.locator('.today-task-list').getByText('A new step from Today', { exact: true })).toBeVisible();
-  await page.getByRole('link', { name: 'Talk it through', exact: true }).click();
+  await page.getByRole('link', { name: 'Ask Finn', exact: true }).click();
   await expect(page.getByRole('textbox', { name: 'Ask Finn a question' })).toHaveValue('What needs my attention today?');
 });
 
@@ -40,7 +40,7 @@ test('Today remains readable in both themes at phone, tablet and desktop widths'
     await page.goto('/');
     for (const width of [360, 390, 768, 1440]) {
       await page.setViewportSize({ width, height: 844 });
-      await expect(page.getByRole('heading', { name: 'Your day, in view.', exact: true })).toBeVisible();
+      await expect(page.getByRole('heading', { name: 'Today', exact: true })).toBeVisible();
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
       await page.locator('.today-finn').scrollIntoViewIfNeeded();
       expect(await page.locator('.today-finn .finn-sprite').evaluate(el => getComputedStyle(el).animationName)).toBe('none');
@@ -60,10 +60,10 @@ test('Today empty states, current events and reminders use real times and record
   let records = [];
   await page.route('**/api/records*', route => route.fulfill({ json: { records, next: null } }));
   await page.goto('/');
-  await expect(page.getByRole('heading', { name: 'Your day, in view.', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Today', exact: true })).toBeVisible();
   await expect(page.locator('.save-status')).toHaveText('Synced');
   await expect(page.locator('.today-greeting')).toHaveText('Good morning, Richmond.');
-  await expect(page.getByRole('heading', { name: 'Your list is clear.' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'No open tasks.', exact: true })).toBeVisible();
   await expect(page.locator('.today-spending')).toContainText('₱0.00');
   const row = (type, id, patch) => ({ id, version: 1, deleted: false, created_at: '2026-10-11T00:00:00Z', updated_at: '2026-10-11T00:00:00Z',
     data: { ...blankRecord(type, '2026-10-11'), title: id, ...patch } });

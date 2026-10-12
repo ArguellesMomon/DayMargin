@@ -48,3 +48,13 @@ both pages, rather than relying on an animation name alone.
 The user subsequently confirmed Reduce motion was enabled. That setting intentionally
 disables sprite playback and needs to be turned off to see normal movement. The
 correction preserves the user's preference; it does not silently turn animations on.
+
+## Finn chat presentation update — October 12, 2026
+
+Chat now uses a larger thinking pose with the same mapped frames in a 1.2-second
+cycle, a gentle surrounding sway and animated dots. Submitted messages enter the
+conversation immediately; new messages have a short fade/rise. A successful reply
+still triggers the supplied wave without delaying another send. Both device and
+app reduced-motion preferences stop these added movements. Today retains its
+existing timing and playback. The original WebP is unchanged. See
+[Finn chat UI](../../docs/FINN_CHAT_UI.md) for interaction and verification details.

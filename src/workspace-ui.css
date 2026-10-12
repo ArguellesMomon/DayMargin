@@ -235,7 +235,7 @@
   .dm-page .page-heading .eyebrow { font-size: 9px; margin-bottom: 9px; }
   .dm-page .page-description, .dm-page .editor-heading > .muted { font-size: 12px; margin-top: 11px; }
   .library-page .page-heading .eyebrow { min-height: 44px; display: flex; align-items: center; padding-right: 130px; }
-  .library-page .page-heading > .button { position: absolute; right: 0; top: 0; margin-top: 0; min-height: 44px; padding: 10px 11px; font-size: 12px; gap: 5px; }
+  .library-page .page-heading > .button { position: static; margin-top: 0; min-height: 44px; padding: 10px 11px; font-size: 12px; gap: 5px; }
   .library-page.spending-page .page-heading h1 { font-size: 33px; max-width: 310px; }
   .library-page .library-tools { padding-top: 20px; }
   .library-page .search-box input { font-size: 16px; }
@@ -319,3 +319,14 @@
   .settings-nav { gap: 5px 15px; }
   .finn-page .finn-heading small { font-size: 9px; }
 }
+
+/* Keep routine screens focused on headings, records and actions. */
+.library-page .page-heading { display: flex; align-items: center; }
+.sidebar nav { margin-top: 32px; }
+.sidebar-bottom { padding-top: 20px; }
+.sidebar-bottom .settings-link { margin-top: 0; }
+.cal-agenda-footer { justify-content: flex-end; }
+.settings-context-details { margin-block: 14px; color: var(--muted); font-size: 12px; line-height: 1.8; }
+.settings-context-details summary { cursor: pointer; min-height: 44px; display: list-item; padding-block: 10px; list-style: disclosure-closed; }
+.settings-context-details[open] summary { list-style: disclosure-open; }
+.settings-context-details summary:hover { color: var(--accent); }

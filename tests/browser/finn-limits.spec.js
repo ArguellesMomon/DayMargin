@@ -39,11 +39,13 @@ test('Finn permits immediate explicit retry and follow-ups without a countdown o
   await input.fill('How small?');
   await input.press('Enter');
   await expect(input).toHaveValue('');
-  expect(requests).toBe(3);
+  await expect.poll(() => requests).toBe(3);
+  await expect(page.locator('.message.assistant')).toHaveCount(2);
   expect(bodies[2]).toEqual({ question: 'How small?', history: ['isolated-memory-receipt'] });
   await page.getByRole('button', { name: 'Start a new chat' }).click();
   await page.getByRole('button', { name: 'Start fresh' }).click();
   await input.fill('Hello again.'); await send.click();
   await expect(input).toHaveValue('');
+  await expect.poll(() => bodies.length).toBe(4);
   expect(bodies[3].history).toEqual([]);
 });
