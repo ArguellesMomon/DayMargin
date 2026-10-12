@@ -1,6 +1,6 @@
 # Finn chat — clearer sending and motion
 
-October 12, 2026, Asia/Manila. Local implementation for review.
+October 12, 2026, Asia/Manila. Implementation and verification.
 
 The user requested an improved Finn chat page and animation, and reported that
 their submitted message stayed in the textbox while Finn was thinking. The
@@ -64,6 +64,17 @@ that can now contain an unanswered message.
   viewport without resizing the layout viewport, then dismissing it. Physical
   iPhone keyboard verification remains outstanding.
 
+The follow-up keyboard correction applies to every route, including editors,
+Library search, account forms and password dialogs. While the keyboard is open,
+single-finger drags are consumed inside scrollable content rather than passed to
+Safari's native root viewport. Navigation and the composer remain stationary;
+dragging either one or past a content boundary cannot move the screen. Taps and
+pinch zoom remain available. Closing the keyboard restores normal document
+scrolling outside Finn, including the form's current reading position. Browser
+checks cover touch cancellation, scrolling in both directions, content boundaries,
+dialog scrolling, keyboard dismissal, landscape rotation and route cleanup; real iPhone verification
+is still needed because desktop browsers cannot reproduce Safari's system keyboard.
+
 The user's supplied spritesheet remains unchanged. Finn's server personality,
 model/provider, source grounding and proposal approval are unchanged. The new
 motion is scoped to Finn's chat; Today keeps its existing character playback.
@@ -83,6 +94,10 @@ only offline-sprite case is skipped on development. Thinking-frame capture uses 
 fixed screenshot clip so the intended continuous sway does not wait for stability.
 Phone/desktop welcome, thinking and reply previews were inspected in both themes.
 
+The shared keyboard correction passes 76 unit checks and 26 relevant browser
+scenarios, including browser-generated touch drags and the existing editor,
+account, theme and chat regression checks. The production build passes.
+
 Previews use isolated account sessions and mocked AI responses; no production
-records or paid model requests are used. This revision remains local pending
-explicit commit/push authorization.
+records or paid model requests are used. Verified keyboard corrections are
+released through the main branch following the user's commit/push authorization.

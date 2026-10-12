@@ -61,7 +61,7 @@ test('Portrait and landscape chat keep the composer and note next to navigation 
     await expect(page.getByRole('button', { name: 'Latest messages', exact: true })).toHaveCount(0);
   }
   await page.getByRole('navigation', { name: 'Mobile navigation' }).getByRole('link', { name: 'Library' }).click();
-  await expect(page.locator('html')).not.toHaveClass(/finn-viewport/);
+  await expect(page.locator('html')).not.toHaveClass(/app-viewport/);
   expect(await page.locator('body').evaluate(el => getComputedStyle(el).position)).toBe('static');
 });
 
@@ -88,7 +88,7 @@ test('A keyboard that only shrinks and pans the visual viewport keeps the chat f
   await expectCompactShell(page, 70, 330);
   expect(await page.locator('.chat-content').evaluate(el => el.scrollTop)).toBeLessThan(20);
   await page.getByRole('button', { name: 'Latest messages', exact: true }).click();
-  await page.evaluate(() => window.resizeChatViewport(844));
+  await page.evaluate(() => window.resizeChatViewport(844, 70));
   await expectCompactShell(page, 0, 844);
   await expect(page.locator('.message').last()).toBeInViewport();
 });
