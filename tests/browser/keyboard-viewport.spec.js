@@ -167,3 +167,36 @@ test('Rotating an editor with the keyboard open keeps landscape navigation above
   await expect(page).toHaveURL(/\/library$/);
   expect(await swipe(page, '#main', 100)).toBe(false);
 });
+
+test('Keyboard touch scrolling coasts and stops on another touch without moving navigation', async ({ page }) => {
+  await prepare(page);
+  await page.goto('/new/task');
+  await page.getByRole('textbox', { name: 'Title', exact: true }).focus();
+  await keyboard(page, 360, 0);
+  const main = page.locator('#main');
+  await main.evaluate(el => {
+    const spacer = document.createElement('div');
+    spacer.style.height = '3000px';
+    spacer.style.flexShrink = '0';
+    el.appendChild(spacer);
+    el.scrollTop = 100;
+  });
+  const session = await page.context().newCDPSession(page);
+  try {
+    await session.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: 20, y: 280 }] });
+    for (let step = 1; step <= 6; step++) {
+      await session.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: 20, y: 280 - step * 20 }] });
+      await page.waitForTimeout(16);
+    }
+    await session.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+    const released = await main.evaluate(el => el.scrollTop);
+    await expect.poll(() => main.evaluate(el => el.scrollTop)).toBeGreaterThan(released + 10);
+    await expectAnchored(page, 0, 360);
+    await session.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: 20, y: 280 }] });
+    const stopped = await main.evaluate(el => el.scrollTop);
+    await page.waitForTimeout(100);
+    expect(await main.evaluate(el => el.scrollTop)).toBe(stopped);
+    await session.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+    await expectAnchored(page, 0, 360);
+  } finally { await session.detach(); }
+});
