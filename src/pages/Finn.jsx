@@ -29,6 +29,7 @@ export default function Finn() {
   const request = useRef(null);
   const mounted = useRef(true);
   const followLatest = useRef(true);
+  const scrollSize = useRef({ width: 0, height: 0 });
   const messages = data.chats;
   const optimistic = pendingTurn || failedTurn;
   const visibleMessages = optimistic && !messages.some(message => message.id === optimistic.id) ? [...messages, optimistic] : messages;
@@ -42,8 +43,24 @@ export default function Finn() {
     const frame = requestAnimationFrame(() => { if (scroll.current) scroll.current.scrollTop = scroll.current.scrollHeight; });
     return () => cancelAnimationFrame(frame);
   }, [visibleMessages.length, busy]);
+  useEffect(() => {
+    const node = scroll.current;
+    let frame;
+    const observer = new ResizeObserver(() => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        if (followLatest.current && node.querySelector('.messages')) node.scrollTop = node.scrollHeight;
+      });
+    });
+    observer.observe(node);
+    return () => { observer.disconnect(); cancelAnimationFrame(frame); };
+  }, []);
   function trackScroll() {
     const node = scroll.current;
+    const resized = node.clientWidth !== scrollSize.current.width || node.clientHeight !== scrollSize.current.height;
+    scrollSize.current = { width: node.clientWidth, height: node.clientHeight };
+    // Resizing/reflow can emit a scroll before ResizeObserver restores the bottom.
+    if (resized && followLatest.current && node.querySelector('.messages')) { node.scrollTop = node.scrollHeight; return; }
     const away = node.scrollHeight - node.scrollTop - node.clientHeight > 72;
     followLatest.current = !away; setAwayFromBottom(away);
   }

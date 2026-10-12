@@ -53,9 +53,16 @@ that can now contain an unanswered message.
 - Chat follows recent activity while the reader is at the bottom. Reading older
   messages preserves that position when a reply arrives. Latest messages returns
   to the newest reply and stays above the composer/error area.
-- The chat no longer forces a large minimum height on a short viewport. Checks
-  include a 390 × 500 view as a limited-height layout scenario; actual mobile
-  keyboard behavior still requires a physical-device check.
+- The chat shell follows the visual viewport's height and vertical offset, so
+  opening the keyboard leaves the composer, confirmation note and navigation
+  together at the visible bottom. Only the conversation scrolls; the document
+  stays fixed. Leaving Finn restores the normal page layout and scrolling.
+- Compact spacing and a shorter navigation row keep portrait and landscape
+  layouts usable, including a 844 × 260 viewport. Resize preserves the latest
+  message when following it and preserves the reading position in older history.
+  Browser checks also simulate a keyboard shrinking and panning the visual
+  viewport without resizing the layout viewport, then dismissing it. Physical
+  iPhone keyboard verification remains outstanding.
 
 The user's supplied spritesheet remains unchanged. Finn's server personality,
 model/provider, source grounding and proposal approval are unchanged. The new

@@ -1,5 +1,5 @@
 /* Finn's chat keeps movement close to the conversation and the composer stable. */
-.finn-page.finn-chat { max-width: 900px; height: calc(100dvh - 200px); min-height: 0; position: relative; }
+.finn-page.finn-chat { max-width: 900px; width: 100%; flex: 1; height: auto; min-height: 0; margin: 0 auto; position: relative; }
 .finn-page.finn-chat .finn-heading { padding-bottom: 18px; }
 .finn-page.finn-chat .finn-heading .finn-avatar { width: 50px; height: 50px; }
 .finn-page.finn-chat .finn-heading h1 { font-size: 24px; }
@@ -48,7 +48,7 @@
   .finn-page.finn-chat .starter-questions > button { min-height: 61px; }
 }
 @media (max-width: 700px) {
-  .finn-page.finn-chat { height: calc(100dvh - 225px - env(safe-area-inset-bottom)); min-height: 0; }
+  .finn-page.finn-chat { height: auto; min-height: 0; }
   .finn-page.finn-chat .finn-heading { padding-bottom: 13px; }
   .finn-page.finn-chat .finn-heading .finn-avatar { width: 44px; height: 44px; }
   .finn-page.finn-chat .finn-heading h1 { font-size: 22px; }

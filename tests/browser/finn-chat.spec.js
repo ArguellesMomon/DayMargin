@@ -11,6 +11,88 @@ async function connectedChat(page) {
   await expect(page.locator('.save-status')).toHaveText('Synced');
 }
 
+async function saveChatHistory(page) {
+  await page.evaluate(async id => {
+    const db = await new Promise(resolve => { const req = indexedDB.open('daymargin-v1', 1); req.onsuccess = () => resolve(req.result); });
+    const tx = db.transaction('accounts', 'readwrite'), store = tx.objectStore('accounts');
+    const snapshot = await new Promise(resolve => { const req = store.get(id); req.onsuccess = () => resolve(req.result); });
+    snapshot.chats = Array.from({ length: 24 }, (_, i) => ({ id: `history-${i}`, role: i % 2 ? 'assistant' : 'user', content: `Saved message ${i}. ` + 'Some context to revisit. '.repeat(10), createdAt: '2026-10-12T01:00:00Z' }));
+    store.put(snapshot, id); await new Promise(resolve => { tx.oncomplete = resolve; }); db.close();
+  }, accountId);
+  await page.reload();
+  await expect(page.locator('.message')).toHaveCount(24);
+}
+
+async function expectCompactShell(page, top, height) {
+  await expect.poll(() => page.locator('.chat-layout').evaluate(el => el.getBoundingClientRect().height)).toBeCloseTo(height, 0);
+  const bounds = await page.evaluate(() => {
+    const rect = selector => {
+      const { top, bottom, height } = document.querySelector(selector).getBoundingClientRect();
+      return { top, bottom, height };
+    };
+    return { shell: rect('.chat-layout'), composer: rect('.chat-composer'), note: rect('.chat-footnote'), nav: rect('.bottom-nav'), messages: rect('.chat-content'), scrollY, overflow: document.documentElement.scrollWidth > innerWidth };
+  });
+  expect(bounds.shell.top).toBeCloseTo(top, 0);
+  expect(bounds.nav.bottom).toBeCloseTo(top + height, 0);
+  expect(bounds.composer.bottom).toBeLessThan(bounds.note.top);
+  expect(bounds.note.bottom).toBeLessThanOrEqual(bounds.nav.top);
+  expect(bounds.nav.top - bounds.note.bottom).toBeLessThanOrEqual(7);
+  expect(bounds.messages.height).toBeGreaterThan(25);
+  expect(bounds.scrollY).toBe(0);
+  expect(bounds.overflow).toBe(false);
+}
+
+test('Portrait and landscape chat keep the composer and note next to navigation without page scrolling', async ({ page }, testInfo) => {
+  await connectedChat(page);
+  await page.setViewportSize({ width: 844, height: 260 });
+  await expectCompactShell(page, 0, 260);
+  expect(await page.locator('.chat-content').evaluate(el => el.scrollTop)).toBe(0);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await saveChatHistory(page);
+  for (const [width, height] of [[390, 844], [390, 440], [844, 390], [844, 260], [390, 844]]) {
+    await page.setViewportSize({ width, height });
+    await page.getByRole('textbox', { name: 'Ask Finn a question' }).focus();
+    await expectCompactShell(page, 0, height);
+    await expect(page.locator('.message').last()).toBeInViewport();
+    await page.screenshot({ path: testInfo.outputPath(`chat-${width}-${height}.png`) });
+    await page.locator('.chat-content').evaluate(el => { el.scrollTop = 0; });
+    await expect(page.getByRole('button', { name: 'Latest messages', exact: true })).toBeVisible();
+    await page.getByRole('button', { name: 'Latest messages', exact: true }).click();
+    await expect(page.getByRole('button', { name: 'Latest messages', exact: true })).toHaveCount(0);
+  }
+  await page.getByRole('navigation', { name: 'Mobile navigation' }).getByRole('link', { name: 'Library' }).click();
+  await expect(page.locator('html')).not.toHaveClass(/finn-viewport/);
+  expect(await page.locator('body').evaluate(el => getComputedStyle(el).position)).toBe('static');
+});
+
+test('A keyboard that only shrinks and pans the visual viewport keeps the chat fixed and restores it on dismiss', async ({ page }) => {
+  await page.addInitScript(() => {
+    const viewport = new EventTarget();
+    Object.assign(viewport, { height: 844, offsetTop: 0, scale: 1 });
+    Object.defineProperty(window, 'visualViewport', { value: viewport, configurable: true });
+    window.resizeChatViewport = (height, offsetTop = 0) => {
+      Object.assign(viewport, { height, offsetTop });
+      viewport.dispatchEvent(new Event('resize'));
+      viewport.dispatchEvent(new Event('scroll'));
+    };
+  });
+  await connectedChat(page);
+  await saveChatHistory(page);
+  await page.getByRole('textbox', { name: 'Ask Finn a question' }).focus();
+  await page.evaluate(() => window.resizeChatViewport(360, 54));
+  await expectCompactShell(page, 54, 360);
+  await expect(page.locator('.message').last()).toBeInViewport();
+  await page.locator('.chat-content').evaluate(el => { el.scrollTop = 0; });
+  await expect(page.getByRole('button', { name: 'Latest messages', exact: true })).toBeVisible();
+  await page.evaluate(() => window.resizeChatViewport(330, 70));
+  await expectCompactShell(page, 70, 330);
+  expect(await page.locator('.chat-content').evaluate(el => el.scrollTop)).toBeLessThan(20);
+  await page.getByRole('button', { name: 'Latest messages', exact: true }).click();
+  await page.evaluate(() => window.resizeChatViewport(844));
+  await expectCompactShell(page, 0, 844);
+  await expect(page.locator('.message').last()).toBeInViewport();
+});
+
 test('Sending clears the composer immediately, shows one message and preserves the next draft through failure and retry', async ({ page }) => {
   const bodies = [];
   const finish = [];
@@ -132,15 +214,7 @@ test('A new answer does not pull the reader away from older messages; Latest mes
     await route.fulfill({ json: { answer: 'The latest reply is here, bro.', sources: [], action: null } });
   });
   await connectedChat(page);
-  await page.evaluate(async id => {
-    const db = await new Promise(resolve => { const req = indexedDB.open('daymargin-v1', 1); req.onsuccess = () => resolve(req.result); });
-    const tx = db.transaction('accounts', 'readwrite'), store = tx.objectStore('accounts');
-    const snapshot = await new Promise(resolve => { const req = store.get(id); req.onsuccess = () => resolve(req.result); });
-    snapshot.chats = Array.from({ length: 24 }, (_, i) => ({ id: `history-${i}`, role: i % 2 ? 'assistant' : 'user', content: `Saved message ${i}. ` + 'Some context to revisit. '.repeat(10), createdAt: '2026-10-12T01:00:00Z' }));
-    store.put(snapshot, id); await new Promise(resolve => { tx.oncomplete = resolve; }); db.close();
-  }, accountId);
-  await page.reload();
-  await expect(page.locator('.message')).toHaveCount(24);
+  await saveChatHistory(page);
   await page.getByRole('textbox', { name: 'Ask Finn a question' }).fill('A new message.');
   await page.getByRole('button', { name: 'Send question to Finn' }).click();
   await expect.poll(() => typeof finish).toBe('function');

@@ -6,6 +6,7 @@ import { CalendarDays, LayoutList, Library, MessageCircle, Plus, Settings, WifiO
 import { registerSW } from 'virtual:pwa-register';
 import { OrganizerContext } from './context.jsx';
 import { useOrganizer } from './hooks/useOrganizer.js';
+import { useChatViewport } from './hooks/useChatViewport.js';
 import { cloudConfigured, auth } from './lib/cloud.js';
 import { readPreferences, writePreferences } from './lib/storage.js';
 import { dateLabel, today } from './lib/domain.js';
@@ -40,6 +41,8 @@ export default function App() {
   const location = useLocation();
   const account = user?.id || (preview ? 'local-preview' : null);
   const data = useOrganizer(account, !user && preview);
+  const fixedChat = Boolean(authReady && account && location.pathname === '/finn');
+  const chatShell = useChatViewport(fixedChat);
 
   useEffect(() => { readPreferences().then(value => { if (!preferencesEdited.current) { preferencesRef.current = value; setPreferences(value); } }).catch(() => {}); }, []);
   useEffect(() => {
@@ -95,7 +98,7 @@ export default function App() {
   const navClass = path => ({ isActive }) => isActive || path === entryDestination ? 'active' : undefined;
   return <OrganizerContext.Provider value={context}>
     <a href="#main" className="skip-link">Skip to content</a>
-    <div className={visible ? 'app-layout' : 'standalone-layout'}>
+    <div ref={chatShell} className={visible ? `app-layout${fixedChat ? ' chat-layout' : ''}` : 'standalone-layout'}>
       {visible && <aside className="sidebar"><NavLink to="/" className="brand"><BrandMark /><span>daymargin<span className="brand-dot">.</span></span></NavLink>
         <nav aria-label="Main navigation">{destinations.map(({ path, label, icon: Icon }) => <NavLink key={path} to={path} end={path === '/'} className={navClass(path)} aria-current={path === entryDestination ? 'page' : undefined}><Icon size={19} strokeWidth={1.7} /><span>{label}</span><span className="nav-marker" /></NavLink>)}</nav>
         <div className="sidebar-bottom"><NavLink className="settings-link" to="/settings"><Settings size={18} />Settings</NavLink></div></aside>}
